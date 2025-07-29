@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot IA - Formation</title>
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .chatbot-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        
+        .chat-messages {
+            background: white;
+            height: 450px;
+            overflow-y: auto;
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            scroll-behavior: smooth;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            position: relative;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+        
+        .message.bot .message-content {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
+            margin-left: 0.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-right: 0.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        
+        .bot-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .user-avatar {
+            background: #e0e0e0;
+            color: #666;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 0 0 15px 15px;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+        
+        .chat-input button {
+            margin-left: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .chat-input button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 0.5rem 1rem;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .typing-dots {
+            display: inline-block;
+        }
+        
+        .typing-dots span {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: #666;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-dots span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .quick-btn {
+            padding: 0.5rem 1rem;
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .quick-btn:hover {
+            background: #1976d2;
+            color: white;
+        }
+        
+        /* Suggestions dynamiques */
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .suggestion-chip {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #bbdefb;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .suggestion-chip:hover {
+            background: #1976d2;
+            color: white;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-brain"></i> Formation IA
+        </div>
+        <div class="navbar-nav">
+            <a href="{{ url_for('index') }}" class="navbar-link">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+            <a href="{{ url_for('logout') }}" class="navbar-link">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </div>
+    </nav>
+
+    <div class="chatbot-container">
+        <div class="chat-header">
+            <h2><i class="fas fa-robot"></i> Assistant IA Formation</h2>
+            <p>Posez-moi vos questions sur les formations disponibles !</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar bot-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    Bonjour {{ session.username }} ! Je suis votre assistant IA. Je peux vous aider à choisir la meilleure formation selon vos besoins. Que souhaitez-vous savoir ?
+                </div>
+            </div>
+        </div>
+        
+        <div class="quick-actions">
+            <div class="quick-btn" onclick="sendQuickMessage('Quelles formations proposez-vous ?')">
+                📚 Formations disponibles
+            </div>
+            <div class="quick-btn" onclick="sendQuickMessage('Comparer Python et JavaScript')">
+                🔍 Comparer des formations
+            </div>
+            <div class="quick-btn" onclick="sendQuickMessage('Quel est le salaire en Data Science ?')">
+                💰 Salaires
+            </div>
+            <div class="quick-btn" onclick="sendQuickMessage('Je suis débutant, que me conseillez-vous ?')">
+                🤔 Conseils personnalisés
+            </div>
+            <div class="quick-btn" onclick="sendQuickMessage('Durée des formations')">
+                ⏱️ Durée des formations
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <i class="fas fa-robot"></i> L'assistant réfléchit
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Tapez votre question..." maxlength="500">
+            <button onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendQuickMessage(message) {
+            messageInput.value = message;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Afficher le message utilisateur
+            addMessage(message, 'user');
+            messageInput.value = '';
+
+            // Afficher l'indicateur de frappe
+            showTyping();
+
+            try {
+                const response = await fetch('/api/chatbot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const result = await response.json();
+                
+                // Masquer l'indicateur de frappe
+                hideTyping();
+
+                if (result.success) {
+                    // Délai pour simuler la réflexion
+                    setTimeout(() => {
+                        addMessage(result.response, 'bot');
+                    }, 500);
+                } else {
+                    addMessage('Désolé, une erreur est survenue. Veuillez réessayer.', 'bot');
+                }
+            } catch (error) {
+                hideTyping();
+                addMessage('Erreur de connexion. Veuillez vérifier votre connexion internet.', 'bot');
+            }
+        }
+
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `message-avatar ${sender}-avatar`;
+            avatar.innerHTML = sender === 'bot' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+            
+            if (sender === 'bot') {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+            } else {
+                messageDiv.appendChild(messageContent);
+                messageDiv.appendChild(avatar);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

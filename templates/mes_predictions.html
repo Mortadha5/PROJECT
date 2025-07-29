@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Prédictions</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-header {
+            background: rgba(54, 162, 235, 0.1);
+            border: 1px solid rgba(54, 162, 235, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .predictions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .predictions-table th,
+        .predictions-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .predictions-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .predictions-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .formation-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .no-predictions {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header utilisateur -->
+        <div class="user-header">
+            <i class="fas fa-user" style="color: #54a3ff; margin-right: 8px;"></i>
+            <strong>Mes Prédictions</strong> - {{ session.username }}
+        </div>
+
+        <h1><i class="fas fa-history"></i> Mes Prédictions de Formation</h1>
+
+        {% if predictions %}
+            <p>Vous avez <strong>{{ predictions|length }}</strong> prédiction(s) enregistrée(s).</p>
+            
+            <table class="predictions-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Nom</th>
+                        <th><i class="fas fa-user"></i> Prénom</th>
+                        <th><i class="fas fa-birthday-cake"></i> Âge</th>
+                        <th><i class="fas fa-briefcase"></i> Expérience</th>
+                        <th><i class="fas fa-cogs"></i> Compétence</th>
+                        <th><i class="fas fa-graduation-cap"></i> Formation Suggérée</th>
+                        <th><i class="fas fa-magic"></i> Type</th>
+                        <th><i class="fas fa-calendar"></i> Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction in predictions %}
+                    <tr>
+                        <td>{{ prediction.nom }}</td>
+                        <td>{{ prediction.prenom }}</td>
+                        <td>{{ prediction.age }} ans</td>
+                        <td>{{ prediction.experience }} an(s)</td>
+                        <td>{{ prediction.competence }}</td>
+                        <td>
+                            <span class="formation-badge">
+                                {{ prediction.formation_suggeree }}
+                            </span>
+                            {% if prediction.confidence_score %}
+                                <br><small style="color: #666; font-size: 0.8rem;">
+                                    Confiance: {{ prediction.confidence_score }}%
+                                </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if prediction.prediction_type == 'advanced' %}
+                                <span style="background: #28a745; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.75rem;">
+                                    <i class="fas fa-magic"></i> Avancée
+                                </span>
+                            {% else %}
+                                <span style="background: #6c757d; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.75rem;">
+                                    <i class="fas fa-robot"></i> Simple
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if prediction.created_at %}
+                                {{ prediction.created_at.strftime('%d/%m/%Y à %H:%M') }}
+                            {% else %}
+                                Non disponible
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-predictions">
+                <i class="fas fa-inbox" style="font-size: 3rem; color: #ccc; margin-bottom: 20px;"></i>
+                <h3>Aucune prédiction trouvée</h3>
+                <p>Vous n'avez pas encore fait de prédictions de formation.</p>
+                <a href="{{ url_for('index') }}" class="btn">
+                    <i class="fas fa-plus"></i> Faire ma première prédiction
+                </a>
+            </div>
+        {% endif %}
+
+        <!-- Navigation -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{{ url_for('index') }}" class="btn">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+            <a href="{{ url_for('mon_profil') }}" class="btn">
+                <i class="fas fa-user-circle"></i> Mon Profil
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+

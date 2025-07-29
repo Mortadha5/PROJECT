@@ -1,0 +1,54 @@
+/* Variables CSS */
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --success-color: #2ecc71;
+    --error-color: #e74c3c;
+    --warning-color: #f39c12;
+    --dark-color: #2c3e50;
+    --light-color: #ecf0f1;
+}
+
+/* Notifications Toast */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 9999;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.success { background: var(--success-color); }
+.toast.error { background: var(--error-color); }
+.toast.warning { background: var(--warning-color); }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        margin: 10px;
+        padding: 15px;
+    }
+    
+    .navbar {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .navbar div:last-child {
+        margin-top: 10px;
+    }
+    
+    .navbar a {
+        display: block;
+        margin: 5px 0;
+    }
+}

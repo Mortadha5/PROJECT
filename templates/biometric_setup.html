@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Biométrique - Formation IA</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .biometric-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 600px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.8s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .biometric-icon {
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .biometric-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.95);
+        }
+        .biometric-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+        .setup-btn, .test-btn {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin: 10px;
+            cursor: pointer;
+        }
+        .setup-btn:hover, .test-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .setup-btn:disabled, .test-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .status-message {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        .status-info {
+            border-left: 4px solid #3498db;
+        }
+        .status-success {
+            border-left: 4px solid #2ecc71;
+        }
+        .status-error {
+            border-left: 4px solid #e74c3c;
+        }
+        .back-btn {
+            display: inline-block;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="biometric-container">
+        <div class="biometric-icon">
+            <i class="fas fa-fingerprint"></i>
+        </div>
+        
+        <h1 class="biometric-title">Configuration Biométrique</h1>
+        
+        <p class="biometric-subtitle">
+            Configurez votre empreinte digitale pour une connexion rapide et sécurisée.
+            Cette méthode vous permettra de vous connecter sans mot de passe.
+        </p>
+
+        <div id="status-container" style="display: none;" class="status-message">
+            <span id="status-text">Prêt à configurer votre empreinte</span>
+        </div>
+
+        <button id="setup-btn" class="setup-btn" onclick="setupBiometric()">
+            🔐 Configurer mon empreinte
+        </button>
+        
+        <button id="test-btn" class="test-btn" style="display: none;" onclick="testBiometric()">
+            ✅ Tester mon empreinte
+        </button>
+
+        <div>
+            <a href="{{ url_for('index') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Retour à l'accueil
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Vérifier si WebAuthn est supporté
+        if (!window.PublicKeyCredential) {
+            showStatus('❌ Votre navigateur ne supporte pas l\'authentification biométrique.', 'error');
+            document.getElementById('setup-btn').disabled = true;
+        }
+        
+        // Afficher un message de statut
+        function showStatus(message, type) {
+            const container = document.getElementById('status-container');
+            const text = document.getElementById('status-text');
+            
+            container.style.display = 'block';
+            container.className = 'status-message';
+            container.classList.add('status-' + type);
+            text.innerHTML = message;
+        }
+        
+        // Configurer l'empreinte
+        async function setupBiometric() {
+            const setupBtn = document.getElementById('setup-btn');
+            setupBtn.disabled = true;
+            setupBtn.textContent = '⏳ Configuration en cours...';
+            
+            try {
+                showStatus('Démarrage de l\'enregistrement...', 'info');
+                
+                // Étape 1: Démarrer l'enregistrement
+                const startResponse = await fetch('/api/biometric/register/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const startResult = await startResponse.json();
+                
+                if (!startResult.success) {
+                    throw new Error(startResult.error || 'Erreur de démarrage');
+                }
+                
+                showStatus('Placez votre doigt sur le capteur...', 'info');
+                
+                // Préparer les options pour WebAuthn
+                const options = startResult.options;
+                options.challenge = base64ToArrayBuffer(options.challenge);
+                options.user.id = base64ToArrayBuffer(options.user.id);
+                
+                // Étape 2: Créer les credentials
+                const credential = await navigator.credentials.create({
+                    publicKey: options
+                });
+                
+                showStatus('Finalisation de l\'enregistrement...', 'info');
+                
+                // Préparer les données pour l'envoi
+                const credentialData = {
+                    id: credential.id,
+                    rawId: arrayBufferToBase64(credential.rawId),
+                    response: {
+                        attestationObject: arrayBufferToBase64(credential.response.attestationObject),
+                        clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON)
+                    },
+                    type: credential.type
+                };
+                
+                // Étape 3: Compléter l'enregistrement
+                const completeResponse = await fetch('/api/biometric/register/complete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({credential: credentialData})
+                });
+
+                console.log('Response status:', completeResponse.status);
+                console.log('Response headers:', completeResponse.headers);
+
+                const responseText = await completeResponse.text();
+                console.log('Raw response:', responseText);
+
+                let completeResult;
+                try {
+                    completeResult = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Failed to parse JSON:', e);
+                    throw new Error('Réponse serveur invalide: ' + responseText.substring(0, 100));
+                }
+                
+                if (completeResult.success) {
+                    showStatus('✅ Empreinte configurée avec succès !', 'success');
+                    setupBtn.style.display = 'none';
+                    document.getElementById('test-btn').style.display = 'block';
+                } else {
+                    throw new Error(completeResult.error || 'Erreur de vérification');
+                }
+                
+            } catch (error) {
+                console.error('Erreur configuration:', error);
+                showStatus(`❌ Erreur: ${error.message}`, 'error');
+                setupBtn.disabled = false;
+                setupBtn.textContent = '🔐 Configurer mon empreinte';
+            }
+        }
+        
+        // Tester l'empreinte
+        async function testBiometric() {
+            const testBtn = document.getElementById('test-btn');
+            testBtn.disabled = true;
+            testBtn.textContent = '⏳ Test en cours...';
+            
+            try {
+                showStatus('Démarrage du test...', 'info');
+                
+                // Étape 1: Démarrer l'authentification
+                const startResponse = await fetch('/api/biometric/login/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const startResult = await startResponse.json();
+                
+                if (!startResult.success) {
+                    throw new Error(startResult.error || 'Erreur de démarrage du test');
+                }
+                
+                showStatus('Placez votre doigt sur le capteur...', 'info');
+                
+                // Préparer les options pour WebAuthn
+                const options = startResult.options;
+                options.challenge = base64ToArrayBuffer(options.challenge);
+                
+                if (options.allowCredentials) {
+                    options.allowCredentials.forEach(cred => {
+                        cred.id = base64ToArrayBuffer(cred.id);
+                    });
+                }
+                
+                // Étape 2: Obtenir les credentials
+                const assertion = await navigator.credentials.get({
+                    publicKey: options
+                });
+                
+                showStatus('Vérification de l\'empreinte...', 'info');
+                
+                // Préparer les données pour l'envoi
+                const assertionData = {
+                    id: assertion.id,
+                    rawId: arrayBufferToBase64(assertion.rawId),
+                    response: {
+                        authenticatorData: arrayBufferToBase64(assertion.response.authenticatorData),
+                        clientDataJSON: arrayBufferToBase64(assertion.response.clientDataJSON),
+                        signature: arrayBufferToBase64(assertion.response.signature)
+                    },
+                    type: assertion.type
+                };
+                
+                // Étape 3: Compléter l'authentification
+                const completeResponse = await fetch('/api/biometric/login/complete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({assertion: assertionData})
+                });
+                
+                const completeResult = await completeResponse.json();
+                
+                if (completeResult.success) {
+                    showStatus('✅ Test réussi ! Votre empreinte fonctionne parfaitement.', 'success');
+                } else {
+                    throw new Error(completeResult.error || 'Échec du test');
+                }
+                
+            } catch (error) {
+                console.error('Erreur test:', error);
+                showStatus(`❌ Erreur test: ${error.message}`, 'error');
+            } finally {
+                testBtn.disabled = false;
+                testBtn.textContent = '✅ Tester mon empreinte';
+            }
+        }
+        
+        // Fonctions utilitaires
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+        
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+    </script>
+</body>
+</html>
+
+

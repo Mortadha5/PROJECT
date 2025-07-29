@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formation IA - Système de Recommandation</title>
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar Moderne -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-brain"></i> Formation IA
+        </div>
+        <div class="navbar-nav">
+            <div class="navbar-user">
+                <div class="user-avatar">
+                    {% if session.get('avatar_type') == 'file' %}
+                        <img src="{{ session.user_avatar }}" alt="Avatar" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;">
+                    {% else %}
+                        <i class="{{ session.user_avatar or 'fas fa-user-circle' }}"></i>
+                    {% endif %}
+                </div>
+                <span>{{ session.username }}</span>
+                {% if session.role == 'admin' %}
+                    <span class="badge badge-admin">
+                        <i class="fas fa-crown"></i> Admin
+                    </span>
+                {% else %}
+                    <span class="badge badge-user">
+                        <i class="fas fa-user"></i> User
+                    </span>
+                {% endif %}
+            </div>
+            
+            <!-- NOUVEAU LIEN ICI -->
+            {% if session.role == 'admin' %}
+                <a href="{{ url_for('admin_security') }}" class="navbar-link">
+                    <i class="fas fa-shield-alt"></i> Sécurité
+                </a>
+                <a href="{{ url_for('advanced_prediction_page') }}" class="navbar-link">
+                    <i class="fas fa-magic"></i> Prédictions Avancées
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="navbar-link">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="{{ url_for('historique') }}" class="navbar-link">
+                    <i class="fas fa-history"></i> Historique
+                </a>
+                <a href="{{ url_for('admin_users') }}" class="navbar-link">
+                    <i class="fas fa-users-cog"></i> Utilisateurs
+                </a>
+                <a href="{{ url_for('messages') }}" class="navbar-link">
+                    <i class="fas fa-comments"></i> Messages
+                </a>
+            {% else %}
+                <a href="{{ url_for('mes_predictions') }}" class="navbar-link">
+                    <i class="fas fa-list"></i> Mes Prédictions
+                </a>
+                <a href="{{ url_for('mon_profil') }}" class="navbar-link">
+                    <i class="fas fa-user-edit"></i> Mon Profil
+                </a>
+                <a href="{{ url_for('messages') }}" class="navbar-link">
+                    <i class="fas fa-comments"></i> Messages
+                    <span id="unreadBadge" style="display: none; background: #dc3545; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-left: 5px;"></span>
+                </a>
+            {% endif %}
+
+            <a href="{{ url_for('chatbot_page') }}" class="navbar-link">
+                <i class="fas fa-robot"></i> Chatbot IA
+            </a>
+
+            <a href="{{ url_for('logout') }}" class="navbar-link">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="card animate-fade-in" style="text-align: center; margin-bottom: 3rem;">
+            <div class="card-icon" style="margin: 0 auto 1rem;">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Système de Recommandation de Formation
+            </h1>
+            <p style="font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                Utilisez l'intelligence artificielle pour obtenir des recommandations personnalisées de formation basées sur l'âge, l'expérience et les compétences.
+            </p>
+        </div>
+
+        <!-- Formulaire de Prédiction -->
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h2 class="card-title">Nouvelle Prédiction</h2>
+            </div>
+
+            <form method="POST" class="grid grid-2">
+                <div class="form-group">
+                    <label class="form-label" for="nom">
+                        <i class="fas fa-user"></i> Nom
+                    </label>
+                    <input type="text" id="nom" name="nom" class="form-control" required placeholder="Entrez le nom">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="prenom">
+                        <i class="fas fa-user"></i> Prénom
+                    </label>
+                    <input type="text" id="prenom" name="prenom" class="form-control" required placeholder="Entrez le prénom">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="age">
+                        <i class="fas fa-calendar-alt"></i> Âge
+                    </label>
+                    <input type="number" id="age" name="age" class="form-control" required min="18" max="65" placeholder="25">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="experience">
+                        <i class="fas fa-briefcase"></i> Années d'expérience
+                    </label>
+                    <input type="number" id="experience" name="experience" class="form-control" required min="0" max="40" placeholder="3">
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label" for="competence">
+                        <i class="fas fa-cogs"></i> Compétence principale
+                    </label>
+                    <select id="competence" name="competence" class="form-control" required>
+                        <option value="">Sélectionnez une compétence</option>
+                        {% for comp in competences %}
+                            <option value="{{ comp }}">{{ comp.title() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="grid-column: 1 / -1; text-align: center; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-magic"></i> Prédire la Formation
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Résultat de Prédiction -->
+        {% if prediction %}
+        <div class="card animate-fade-in" style="margin-top: 2rem;">
+            <div class="card-header">
+                <div class="card-icon" style="background: var(--success-gradient);">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3 class="card-title">Résultat de la Prédiction</h3>
+            </div>
+            <div style="text-align: center; padding: 2rem;">
+                <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">
+                    Formation recommandée :
+                </div>
+                <div style="font-size: 2rem; font-weight: 700; background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">
+                    {{ prediction }}
+                </div>
+                <p style="color: var(--text-secondary);">
+                    Cette recommandation est basée sur l'analyse IA des données fournies.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Animation au scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+
+    <script>
+        // Vérifier les messages non lus
+        async function checkUnreadMessages() {
+            try {
+                const response = await fetch('/api/unread_messages');
+                const data = await response.json();
+                
+                const badge = document.getElementById('unreadBadge');
+                if (data.unread_count > 0) {
+                    badge.textContent = data.unread_count;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (error) {
+                console.log('Erreur lors de la vérification des messages');
+            }
+        }
+
+        // Vérifier toutes les 30 secondes
+        setInterval(checkUnreadMessages, 30000);
+        
+        // Vérifier au chargement
+        checkUnreadMessages();
+    </script>
+</body>
+</html>

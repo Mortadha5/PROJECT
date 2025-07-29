@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier mon profil</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .current-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-user-edit"></i> Modifier mon profil</h1>
+            <p>Personnalisez vos informations</p>
+        </div>
+
+        {% if error %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-triangle"></i> {{ error }}
+            </div>
+        {% endif %}
+
+        {% if success %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> {{ success }}
+            </div>
+        {% endif %}
+
+        <div class="avatar-section">
+            <div class="current-avatar" onclick="openAvatarModal()">
+                {% if user.avatar_type == 'file' and user.avatar_file %}
+                    <img src="/static/uploads/avatars/{{ user.avatar_file }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                {% elif user.avatar %}
+                    <i class="{{ user.avatar }}"></i>
+                {% else %}
+                    <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <p>Avatar actuel (cliquez pour changer)</p>
+        </div>
+
+        <!-- Modal pour changer l'avatar -->
+        <div id="avatarModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+            <div style="background-color: white; margin: 15% auto; padding: 20px; border-radius: 15px; width: 400px; text-align: center;">
+                <h3><i class="fas fa-camera"></i> Changer l'avatar</h3>
+                
+                <div style="margin: 20px 0;">
+                    <input type="file" id="avatarFile" accept="image/*" style="display: none;">
+                    <button onclick="document.getElementById('avatarFile').click()" class="btn btn-primary" style="margin: 10px;">
+                        <i class="fas fa-upload"></i> Uploader une photo
+                    </button>
+                    <button onclick="changeRandomAvatar()" class="btn btn-secondary" style="margin: 10px;">
+                        <i class="fas fa-random"></i> Avatar aléatoire
+                    </button>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="closeAvatarModal()" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label" for="username">
+                    <i class="fas fa-user"></i> Nom d'utilisateur
+                </label>
+                <input type="text" id="username" name="username" class="form-control" 
+                       value="{{ user.username }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">
+                    <i class="fas fa-envelope"></i> Email (optionnel)
+                </label>
+                <input type="email" id="email" name="email" class="form-control" 
+                       value="{{ user.email or '' }}" placeholder="votre@email.com">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="bio">
+                    <i class="fas fa-quote-left"></i> Biographie (optionnel)
+                </label>
+                <textarea id="bio" name="bio" class="form-control" 
+                          placeholder="Parlez-nous de vous...">{{ user.bio or '' }}</textarea>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Sauvegarder
+                </button>
+                <a href="{{ url_for('mon_profil') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    function openAvatarModal() {
+        document.getElementById('avatarModal').style.display = 'block';
+    }
+
+    function closeAvatarModal() {
+        document.getElementById('avatarModal').style.display = 'none';
+    }
+
+    // Upload de fichier
+    document.getElementById('avatarFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('avatar', file);
+            
+            fetch('/api/upload_avatar', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Erreur de connexion');
+            });
+            
+            closeAvatarModal();
+        }
+    });
+
+    function changeRandomAvatar() {
+        fetch('/api/upload_avatar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Erreur de connexion');
+        });
+        
+        closeAvatarModal();
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('avatarModal');
+        if (event.target == modal) {
+            closeAvatarModal();
+        }
+    }
+    </script>
+</body>
+</html>
+

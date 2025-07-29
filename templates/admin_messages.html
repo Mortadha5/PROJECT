@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Admin</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .messages-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .conversation-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .conversation-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .conversation-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .unread-badge {
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        .last-message {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .message-time {
+            color: #999;
+            font-size: 0.8rem;
+        }
+        
+        .navigation {
+            text-align: center;
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="messages-container">
+        <!-- Header Admin -->
+        <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center;">
+            <i class="fas fa-crown" style="color: #ffd700; margin-right: 8px;"></i>
+            <strong>Espace Administrateur</strong> - Centre de Messages
+        </div>
+
+        <h1><i class="fas fa-comments"></i> Messages des Utilisateurs</h1>
+
+        {% if conversations %}
+            {% for conv in conversations %}
+            <div class="conversation-item" onclick="openConversation('{{ conv._id }}')">
+                <div class="conversation-header">
+                    <div>
+                        <span class="user-name">
+                            <i class="fas fa-user"></i> {{ conv._id }}
+                        </span>
+                        {% if conv.unread_count > 0 %}
+                            <span class="unread-badge">{{ conv.unread_count }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="message-time">
+                        {{ conv.last_message.created_at.strftime('%d/%m/%Y à %H:%M') }}
+                    </div>
+                </div>
+                <div class="last-message">
+                    <strong>{{ conv.last_message.from_user }}:</strong> 
+                    {{ conv.last_message.message[:100] }}{% if conv.last_message.message|length > 100 %}...{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 50px; color: #666;">
+                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                <h3>Aucun message</h3>
+                <p>Aucune conversation avec les utilisateurs pour le moment.</p>
+            </div>
+        {% endif %}
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-info">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </a>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+                <i class="fas fa-users"></i> Utilisateurs
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function openConversation(username) {
+            window.location.href = `/messages/${username}`;
+        }
+    </script>
+</body>
+</html>
+

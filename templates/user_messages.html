@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages avec l'Admin</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .messages-area {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+        
+        .message.sent {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+            animation: slideInRight 0.3s ease;
+        }
+        
+        .message.received {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            animation: slideInLeft 0.3s ease;
+        }
+        
+        .message-header {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .message-input input:focus {
+            border-color: #667eea;
+        }
+        
+        .message-input input::placeholder {
+            color: #999;
+        }
+        
+        .send-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .send-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .send-btn:active {
+            transform: translateY(0);
+        }
+        
+        .send-btn i {
+            font-size: 1.1rem;
+        }
+        
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .send-btn:disabled:hover {
+            background: #667eea;
+            transform: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Animations pour les nouveaux messages */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Navigation Simple et Moderne */
+        .navigation {
+            text-align: center;
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navigation {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 200px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Header -->
+        <div style="background: rgba(54, 162, 235, 0.1); border: 1px solid rgba(54, 162, 235, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center;">
+            <i class="fas fa-comments" style="color: #36a2eb; margin-right: 8px;"></i>
+            <strong>Conversation avec l'Administrateur</strong>
+        </div>
+
+        <!-- Zone des messages -->
+        <div class="messages-area" id="messagesArea">
+            {% for message in messages %}
+            <div class="message {% if message.from_user == session.username %}sent{% else %}received{% endif %}">
+                <div class="message-header">
+                    <strong>{{ message.from_user }}</strong> - {{ message.created_at.strftime('%d/%m/%Y à %H:%M') }}
+                </div>
+                <div>{{ message.message }}</div>
+            </div>
+            {% endfor %}
+            
+            {% if not messages %}
+            <div style="text-align: center; color: #666; padding: 50px;">
+                <i class="fas fa-comment-dots" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <p>Aucun message pour le moment.<br>Commencez la conversation avec l'administrateur !</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Zone de saisie -->
+        <div class="message-input">
+            <input type="text" id="messageInput" placeholder="Tapez votre message..." maxlength="500">
+            <button class="send-btn" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Simple -->
+        <div class="navigation">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+            <a href="{{ url_for('mes_predictions') }}" class="btn btn-info">
+                <i class="fas fa-list"></i> Mes Prédictions
+            </a>
+            <a href="{{ url_for('mon_profil') }}" class="btn btn-secondary">
+                <i class="fas fa-user"></i> Mon Profil
+            </a>
+        </div>
+
+    <script>
+        let lastMessageId = null;
+        let isScrolledToBottom = true;
+        
+        // Scroll vers le bas automatiquement
+        const messagesArea = document.getElementById('messagesArea');
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+        
+        // Détecter si l'utilisateur a scrollé vers le haut
+        messagesArea.addEventListener('scroll', function() {
+            isScrolledToBottom = messagesArea.scrollTop + messagesArea.clientHeight >= messagesArea.scrollHeight - 10;
+        });
+
+        // Envoyer message avec Enter
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Désactiver le bouton pendant l'envoi
+            const sendBtn = document.querySelector('.send-btn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const response = await fetch('/send_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        to_user: 'admin'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    input.value = '';
+                    // Recharger les messages immédiatement
+                    await loadNewMessages();
+                } else {
+                    alert('Erreur: ' + result.error);
+                }
+            } catch (error) {
+                alert('Erreur de connexion: ' + error.message);
+            } finally {
+                // Réactiver le bouton
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+        }
+
+        // Charger les nouveaux messages
+        async function loadNewMessages() {
+            try {
+                const response = await fetch('/api/get_messages');
+                const data = await response.json();
+                
+                if (data.messages && data.messages.length > 0) {
+                    const newLastMessageId = data.messages[data.messages.length - 1]._id;
+                    
+                    if (lastMessageId !== newLastMessageId) {
+                        updateMessagesDisplay(data.messages);
+                        lastMessageId = newLastMessageId;
+                        
+                        // Scroll automatique seulement si l'utilisateur était en bas
+                        if (isScrolledToBottom) {
+                            messagesArea.scrollTop = messagesArea.scrollHeight;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Erreur lors du chargement des messages');
+            }
+        }
+
+        // Mettre à jour l'affichage des messages
+        function updateMessagesDisplay(messages) {
+            const messagesHtml = messages.map(message => {
+                const messageClass = message.from_user === '{{ session.username }}' ? 'sent' : 'received';
+                const date = new Date(message.created_at).toLocaleString('fr-FR');
+                
+                return `
+                    <div class="message ${messageClass}">
+                        <div class="message-header">
+                            <strong>${message.from_user}</strong> - ${date}
+                        </div>
+                        <div>${message.message}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            if (messages.length === 0) {
+                messagesArea.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 50px;">
+                        <i class="fas fa-comment-dots" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>Aucun message pour le moment.<br>Commencez la conversation avec l'administrateur !</p>
+                    </div>
+                `;
+            } else {
+                messagesArea.innerHTML = messagesHtml;
+            }
+        }
+
+        // Initialiser le dernier message ID
+        const lastMessage = document.querySelector('.message:last-child');
+        if (lastMessage) {
+            lastMessageId = '{{ messages[-1]._id if messages else "" }}';
+        }
+
+        // Vérifier les nouveaux messages toutes les 2 secondes
+        setInterval(loadNewMessages, 2000);
+        
+        // Indicateur de frappe (optionnel)
+        let typingTimer;
+        document.getElementById('messageInput').addEventListener('input', function() {
+            clearTimeout(typingTimer);
+            // Ici on pourrait ajouter un indicateur "en train d'écrire..."
+            typingTimer = setTimeout(() => {
+                // L'utilisateur a arrêté de taper
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+

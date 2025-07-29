@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Formation IA</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Particules d'arrière-plan */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* Container principal */
+        .login-container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Logo et titre */
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo i {
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 10px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .login-title {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        /* Formulaire */
+        .form-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 2;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Bouton de connexion */
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(238, 90, 36, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Effet de ripple sur le bouton */
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .login-btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Messages d'erreur */
+        .error-message {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Liens */
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .links a:hover {
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Lien vers register */
+        .register-link {
+            background: rgba(255, 255, 255, 0.1) !important;
+            padding: 8px 15px !important;
+            border-radius: 8px !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            display: inline-block !important;
+            margin-top: 10px !important;
+        }
+
+        .register-link:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 20px;
+                padding: 30px 25px;
+            }
+            
+            .logo i {
+                font-size: 3rem;
+            }
+            
+            .login-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules d'arrière-plan -->
+    <div class="particles">
+        <div class="particle" style="left: 10%; width: 20px; height: 20px; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; width: 15px; height: 15px; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 30%; width: 25px; height: 25px; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 40%; width: 18px; height: 18px; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 50%; width: 22px; height: 22px; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 60%; width: 16px; height: 16px; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 70%; width: 24px; height: 24px; animation-delay: 6s;"></div>
+        <div class="particle" style="left: 80%; width: 19px; height: 19px; animation-delay: 7s;"></div>
+        <div class="particle" style="left: 90%; width: 21px; height: 21px; animation-delay: 8s;"></div>
+    </div>
+
+    <div class="login-container">
+        <!-- Logo et titre -->
+        <div class="logo">
+            <i class="fas fa-brain"></i>
+            <h1 class="login-title">Formation IA</h1>
+            <p class="login-subtitle">Système intelligent de recommandation</p>
+        </div>
+
+        <!-- Message d'erreur -->
+        {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <!-- Formulaire de connexion -->
+        <form method="POST">
+            <div class="form-group">
+                <i class="fas fa-user"></i>
+                <input type="text" class="form-input" name="username" placeholder="Nom d'utilisateur" required>
+            </div>
+
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" class="form-input" name="password" placeholder="Mot de passe" required>
+            </div>
+
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Se connecter
+            </button>
+        </form>
+
+        <!-- Ajouter après le formulaire de connexion existant -->
+        <div class="biometric-login" style="margin-top: 30px; text-align: center;">
+            <div style="margin: 20px 0; color: rgba(255,255,255,0.8);">
+                ── ou ──
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="biometric-username" class="form-input" placeholder="Nom d'utilisateur" style="margin-bottom: 15px;">
+            </div>
+            
+            <button type="button" class="biometric-btn" onclick="loginWithBiometric()">
+                <i class="fas fa-fingerprint"></i>
+                Se connecter avec l'empreinte
+            </button>
+        </div>
+
+        <style>
+        .biometric-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .biometric-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(40, 167, 69, 0.4);
+        }
+
+        .biometric-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        </style>
+
+        <script>
+        async function loginWithBiometric() {
+            const usernameInput = document.getElementById('biometric-username');
+            const username = usernameInput.value.trim();
+            const biometricBtn = document.querySelector('.biometric-btn');
+            
+            if (!username) {
+                alert('Veuillez entrer votre nom d\'utilisateur');
+                return;
+            }
+            
+            biometricBtn.disabled = true;
+            biometricBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authentification...';
+            
+            try {
+                // Démarrer l'authentification biométrique
+                const startResponse = await fetch('/api/biometric/login/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: username})
+                });
+                
+                if (!startResponse.ok) {
+                    const errorText = await startResponse.text();
+                    console.error('Erreur HTTP:', startResponse.status, errorText);
+                    throw new Error(`Erreur serveur: ${startResponse.status}`);
+                }
+                
+                const startResult = await startResponse.json();
+                
+                if (!startResult.success) {
+                    throw new Error(startResult.error || 'Erreur inconnue');
+                }
+                
+                // Préparer les options
+                const options = startResult.options;
+                options.challenge = base64ToArrayBuffer(options.challenge);
+                
+                if (options.allowCredentials) {
+                    options.allowCredentials.forEach(cred => {
+                        cred.id = base64ToArrayBuffer(cred.id);
+                    });
+                }
+                
+                // Obtenir l'assertion
+                const assertion = await navigator.credentials.get({
+                    publicKey: options
+                });
+                
+                // Préparer les données
+                const assertionData = {
+                    id: assertion.id,
+                    rawId: arrayBufferToBase64(assertion.rawId),
+                    response: {
+                        authenticatorData: arrayBufferToBase64(assertion.response.authenticatorData),
+                        clientDataJSON: arrayBufferToBase64(assertion.response.clientDataJSON),
+                        signature: arrayBufferToBase64(assertion.response.signature),
+                        userHandle: assertion.response.userHandle ? arrayBufferToBase64(assertion.response.userHandle) : null
+                    },
+                    type: assertion.type
+                };
+                
+                // Compléter l'authentification
+                const completeResponse = await fetch('/api/biometric/login/complete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: username,
+                        assertion: assertionData
+                    })
+                });
+                
+                if (!completeResponse.ok) {
+                    const errorText = await completeResponse.text();
+                    console.error('Erreur HTTP:', completeResponse.status, errorText);
+                    throw new Error(`Erreur serveur: ${completeResponse.status}`);
+                }
+                
+                const completeResult = await completeResponse.json();
+                
+                if (completeResult.success) {
+                    window.location.href = completeResult.redirect || '/';
+                } else {
+                    throw new Error(completeResult.error || 'Échec de l\'authentification');
+                }
+                
+            } catch (error) {
+                console.error('Erreur connexion biométrique:', error);
+                alert('Erreur: ' + error.message);
+            } finally {
+                biometricBtn.disabled = false;
+                biometricBtn.innerHTML = '<i class="fas fa-fingerprint"></i> Se connecter avec l\'empreinte';
+            }
+        }
+
+        // Fonctions utilitaires (même que dans biometric_setup.html)
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+        </script>
+
+        <!-- Liens -->
+        <div class="links">
+            <a href="{{ url_for('forgot_password') }}"><i class="fas fa-key"></i> Mot de passe oublié ?</a>
+            <a href="{{ url_for('register') }}" class="register-link">
+                <i class="fas fa-user-plus"></i> 
+                Pas de compte ? S'inscrire
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Animation des particules
+        document.addEventListener('DOMContentLoaded', function() {
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach(particle => {
+                const randomTop = Math.random() * 100;
+                particle.style.top = randomTop + '%';
+            });
+        });
+
+        // Effet de focus sur les inputs
+        const inputs = document.querySelectorAll('.form-input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        // Effet de ripple sur le bouton
+        const loginBtn = document.querySelector('.login-btn');
+        loginBtn.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+
+            this.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

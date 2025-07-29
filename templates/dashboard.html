@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Formation IA</title>
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-brain"></i> Formation IA
+        </div>
+        <div class="navbar-nav">
+            <div class="navbar-user">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ session.username }}</span>
+                <span class="badge badge-admin">
+                    <i class="fas fa-crown"></i> Admin
+                </span>
+            </div>
+            <a href="{{ url_for('index') }}" class="navbar-link">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+            <a href="{{ url_for('historique') }}" class="navbar-link">
+                <i class="fas fa-history"></i> Historique
+            </a>
+            <a href="{{ url_for('admin_users') }}" class="navbar-link">
+                <i class="fas fa-users-cog"></i> Utilisateurs
+            </a>
+            <a href="{{ url_for('logout') }}" class="navbar-link">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Header Dashboard -->
+        <div class="card animate-fade-in" style="text-align: center; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);">
+            <div class="card-icon" style="margin: 0 auto 1rem; background: var(--warning-gradient);">
+                <i class="fas fa-crown"></i>
+            </div>
+            <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Dashboard Administrateur</h1>
+            <p style="color: var(--text-secondary);">Vue d'ensemble des analyses et statistiques de formation</p>
+        </div>
+
+        <!-- Statistiques Principales -->
+        <div class="stats-grid animate-fade-in">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_employees }}</div>
+                <div class="stat-label">
+                    <i class="fas fa-users"></i> Employés Total
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ avg_age }}</div>
+                <div class="stat-label">
+                    <i class="fas fa-calendar-alt"></i> Âge Moyen
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ avg_experience }}</div>
+                <div class="stat-label">
+                    <i class="fas fa-briefcase"></i> Expérience Moyenne
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ formations|length }}</div>
+                <div class="stat-label">
+                    <i class="fas fa-graduation-cap"></i> Types de Formation
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="grid grid-2" style="margin-bottom: 2rem;">
+            <!-- Distribution des Formations -->
+            <div class="card animate-fade-in">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h3 class="card-title">Distribution des Formations</h3>
+                </div>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="formationChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Distribution par Âge -->
+            <div class="card animate-fade-in">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="card-title">Répartition par Âge</h3>
+                </div>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau des Formations Populaires -->
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h3 class="card-title">Formations les Plus Demandées</h3>
+            </div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-medal"></i> Rang</th>
+                            <th><i class="fas fa-graduation-cap"></i> Formation</th>
+                            <th><i class="fas fa-chart-line"></i> Nombre</th>
+                            <th><i class="fas fa-percentage"></i> Pourcentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for formation, count in formations %}
+                        <tr>
+                            <td>
+                                <span class="badge" style="background: var(--primary-gradient); color: white;">
+                                    #{{ loop.index }}
+                                </span>
+                            </td>
+                            <td style="font-weight: 600;">{{ formation }}</td>
+                            <td>{{ count }}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    {{ "%.1f"|format((count / total_employees * 100)) }}%
+                                    <div style="width: 100px; height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden;">
+                                        <div style="width: {{ (count / total_employees * 100) }}%; height: 100%; background: var(--primary-gradient);"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Actions Rapides -->
+        <div class="card animate-fade-in" style="margin-top: 2rem;">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="card-title">Actions Rapides</h3>
+            </div>
+            <div class="grid grid-3">
+                <a href="{{ url_for('historique') }}" class="btn btn-primary">
+                    <i class="fas fa-history"></i> Voir l'Historique
+                </a>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+                    <i class="fas fa-users-cog"></i> Gérer Utilisateurs
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Nouvelle Prédiction
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Graphique des formations
+        const formationCtx = document.getElementById('formationChart').getContext('2d');
+        new Chart(formationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for formation, count in formations %}'{{ formation }}'{% if not loop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for formation, count in formations %}{{ count }}{% if not loop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: [
+                        '#667eea', '#764ba2', '#f093fb', '#f5576c',
+                        '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+                        '#ff9a9e', '#fecfef', '#ffecd2', '#fcb69f'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+
+        // Graphique des âges
+        const ageCtx = document.getElementById('ageChart').getContext('2d');
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for age_range, count in ages %}'{{ age_range }}'{% if not loop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Nombre d\'employés',
+                    data: [{% for age_range, count in ages %}{{ count }}{% if not loop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Animation au scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.card, .stats-grid').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

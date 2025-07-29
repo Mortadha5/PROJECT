@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accès refusé - Formation IA</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .access-denied-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 500px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-icon {
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+            animation: shake 1s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .error-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .error-message {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .admin-required {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin: 10px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="access-denied-container">
+        <div class="error-icon">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        
+        <h1 class="error-title">Accès Refusé</h1>
+        
+        <p class="error-message">
+            Désolé, vous n'avez pas les permissions nécessaires pour accéder à cette page.
+        </p>
+
+        <div class="admin-required">
+            <i class="fas fa-crown" style="color: #ffd700;"></i>
+            <strong>Accès Administrateur Requis</strong><br>
+            Cette section est réservée aux administrateurs uniquement.
+        </div>
+
+        {% if session.username %}
+        <div class="user-info">
+            <i class="fas fa-user"></i>
+            Connecté en tant que: <strong>{{ session.username }}</strong><br>
+            <i class="fas fa-tag"></i>
+            Rôle: <strong>{{ session.role|title }}</strong>
+        </div>
+        {% endif %}
+
+        <div>
+            <a href="{{ url_for('index') }}" class="back-btn">
+                <i class="fas fa-home"></i>
+                Retour à l'accueil
+            </a>
+            
+            <a href="{{ url_for('logout') }}" class="back-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Se déconnecter
+            </a>
+        </div>
+    </div>
+</body>
+</html>
