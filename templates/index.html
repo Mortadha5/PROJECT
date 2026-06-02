@@ -72,6 +72,12 @@
                 <i class="fas fa-robot"></i> Chatbot IA
             </a>
 
+            <!-- Notification Bell -->
+            <a href="{{ url_for('notifications_page') }}" class="navbar-link" id="notifBell" style="position: relative;">
+                <i class="fas fa-bell"></i>
+                <span id="notifCount" style="display: none; position: absolute; top: -5px; right: -5px; background: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center;"></span>
+            </a>
+
             <a href="{{ url_for('logout') }}" class="navbar-link">
                 <i class="fas fa-sign-out-alt"></i> Déconnexion
             </a>
@@ -101,7 +107,7 @@
                 <h2 class="card-title">Nouvelle Prédiction</h2>
             </div>
 
-            <form method="POST" class="grid grid-2">
+            <form id="predictionForm" class="grid grid-2">
                 <div class="form-group">
                     <label class="form-label" for="nom">
                         <i class="fas fa-user"></i> Nom
@@ -143,55 +149,334 @@
                 </div>
 
                 <div style="grid-column: 1 / -1; text-align: center; margin-top: 1rem;">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="predictBtn">
                         <i class="fas fa-magic"></i> Prédire la Formation
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Résultat de Prédiction -->
-        {% if prediction %}
-        <div class="card animate-fade-in" style="margin-top: 2rem;">
-            <div class="card-header">
-                <div class="card-icon" style="background: var(--success-gradient);">
-                    <i class="fas fa-graduation-cap"></i>
+        <!-- Loading Animation -->
+        <div id="loadingSection" style="display: none; text-align: center; padding: 3rem;">
+            <div style="width: 60px; height: 60px; border: 4px solid rgba(102,126,234,0.2); border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem;"></div>
+            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">Analyse en cours...</h3>
+            <p style="color: var(--text-secondary);">Notre IA analyse votre profil pour trouver la meilleure formation</p>
+        </div>
+
+        <!-- Résultat de Prédiction Amélioré -->
+        <div id="resultSection" style="display: none; margin-top: 2rem;">
+            <!-- Résultat Principal -->
+            <div class="card animate-fade-in" id="mainResult">
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #28a745, #20c997); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 10px 30px rgba(40,167,69,0.3);">
+                        <i class="fas fa-graduation-cap" style="font-size: 2.5rem; color: white;"></i>
+                    </div>
+                    <h3 style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.5rem;">Formation Recommandée</h3>
+                    <div id="resultFormation" style="font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;"></div>
+                    <div id="resultConfidence" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(40,167,69,0.1); padding: 8px 20px; border-radius: 25px; font-weight: 600; color: #28a745;"></div>
                 </div>
-                <h3 class="card-title">Résultat de la Prédiction</h3>
             </div>
-            <div style="text-align: center; padding: 2rem;">
-                <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">
-                    Formation recommandée :
+
+            <!-- Détails de la formation -->
+            <div class="card animate-fade-in" id="formationDetails" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #17a2b8, #6610f2);">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <h3 class="card-title">Détails de la Formation</h3>
                 </div>
-                <div style="font-size: 2rem; font-weight: 700; background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">
-                    {{ prediction }}
+                <div id="detailsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; padding: 1rem 0;"></div>
+            </div>
+
+            <!-- Top Recommandations Alternatives -->
+            <div class="card animate-fade-in" id="alternativesCard" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
+                        <i class="fas fa-list-ol"></i>
+                    </div>
+                    <h3 class="card-title">Autres Formations Recommandées</h3>
                 </div>
-                <p style="color: var(--text-secondary);">
-                    Cette recommandation est basée sur l'analyse IA des données fournies.
-                </p>
+                <div id="alternativesList"></div>
+            </div>
+
+            <!-- Analyse du Profil -->
+            <div class="card animate-fade-in" id="profileCard" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <i class="fas fa-user-chart"></i>
+                    </div>
+                    <h3 class="card-title">Analyse de Votre Profil</h3>
+                </div>
+                <div id="profileContent" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; padding: 1rem 0;"></div>
+            </div>
+
+            <!-- Bouton nouvelle prédiction -->
+            <div style="text-align: center; margin-top: 2rem;">
+                <button onclick="resetForm()" class="btn btn-primary" style="padding: 12px 30px; font-size: 1rem;">
+                    <i class="fas fa-redo"></i> Nouvelle Prédiction
+                </button>
             </div>
         </div>
-        {% endif %}
     </div>
 
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-animate {
+            animation: slideUp 0.5s ease forwards;
+        }
+        .alt-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.2rem;
+            border-radius: 10px;
+            margin-bottom: 0.8rem;
+            background: rgba(102, 126, 234, 0.04);
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+        }
+        .alt-item:hover {
+            transform: translateX(5px);
+            background: rgba(102, 126, 234, 0.08);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+        .alt-rank {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: white;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .alt-info {
+            flex: 1;
+        }
+        .alt-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+        .alt-score {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .alt-bar-container {
+            width: 100px;
+            height: 8px;
+            background: rgba(0,0,0,0.08);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-left: 1rem;
+        }
+        .alt-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+        .detail-box {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .detail-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+        .detail-box i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .detail-box .detail-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+        .detail-box .detail-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        .profile-stat {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+        .profile-stat h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+        .profile-stat p {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+    </style>
+
     <script>
-        // Animation au scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-fade-in');
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const btn = document.getElementById('predictBtn');
+            const loading = document.getElementById('loadingSection');
+            const result = document.getElementById('resultSection');
+            
+            // Masquer résultats précédents, afficher loading
+            result.style.display = 'none';
+            loading.style.display = 'block';
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse...';
+            
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/predict_advanced', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const res = await response.json();
+                
+                if (res.success) {
+                    setTimeout(() => {
+                        loading.style.display = 'none';
+                        displayUserResults(res);
+                        result.style.display = 'block';
+                        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 800);
+                } else {
+                    loading.style.display = 'none';
+                    alert('Erreur: ' + (res.error || 'Erreur inconnue'));
                 }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.card').forEach(card => {
-            observer.observe(card);
+            } catch (error) {
+                loading.style.display = 'none';
+                alert('Erreur de connexion: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic"></i> Prédire la Formation';
+            }
         });
+        
+        function displayUserResults(res) {
+            const top = res.recommendations[0];
+            
+            // Formation principale
+            document.getElementById('resultFormation').textContent = top.formation;
+            document.getElementById('resultConfidence').innerHTML = `
+                <i class="${top.confidence_level.icon}"></i>
+                Score de confiance : ${top.confidence_score}%
+            `;
+            document.getElementById('resultConfidence').style.color = top.confidence_level.color;
+            document.getElementById('resultConfidence').style.background = top.confidence_level.color + '15';
+            
+            // Détails
+            const details = top.details;
+            document.getElementById('detailsGrid').innerHTML = `
+                <div class="detail-box">
+                    <i class="fas fa-clock" style="color: #667eea;"></i>
+                    <div class="detail-label">Durée</div>
+                    <div class="detail-value">${details.duration || 'Variable'}</div>
+                </div>
+                <div class="detail-box">
+                    <i class="fas fa-signal" style="color: #fd7e14;"></i>
+                    <div class="detail-label">Difficulté</div>
+                    <div class="detail-value">${details.difficulty || 'Modérée'}</div>
+                </div>
+                <div class="detail-box">
+                    <i class="fas fa-euro-sign" style="color: #28a745;"></i>
+                    <div class="detail-label">Salaire</div>
+                    <div class="detail-value">${details.salary_range || 'Variable'}</div>
+                </div>
+                <div class="detail-box">
+                    <i class="fas fa-briefcase" style="color: #17a2b8;"></i>
+                    <div class="detail-label">Opportunités</div>
+                    <div class="detail-value">${details.job_opportunities || 'Bonnes'}</div>
+                </div>
+                ${details.industries ? `
+                <div class="detail-box" style="grid-column: 1 / -1;">
+                    <i class="fas fa-building" style="color: #6610f2;"></i>
+                    <div class="detail-label">Secteurs</div>
+                    <div class="detail-value">${details.industries.join(' • ')}</div>
+                </div>` : ''}
+            `;
+            
+            // Alternatives
+            const colors = ['#667eea', '#28a745', '#fd7e14', '#dc3545', '#17a2b8'];
+            const alts = res.recommendations.slice(1);
+            if (alts.length > 0) {
+                document.getElementById('alternativesCard').style.display = 'block';
+                document.getElementById('alternativesList').innerHTML = alts.map((rec, i) => `
+                    <div class="alt-item result-animate" style="animation-delay: ${(i+1)*0.1}s;">
+                        <div class="alt-rank" style="background: ${colors[i+1] || colors[0]};">${i+2}</div>
+                        <div class="alt-info">
+                            <div class="alt-name">${rec.formation}</div>
+                            <div class="alt-score"><i class="${rec.confidence_level.icon}" style="color:${rec.confidence_level.color};"></i> ${rec.confidence_score}% - ${rec.confidence_level.level}</div>
+                        </div>
+                        <div class="alt-bar-container">
+                            <div class="alt-bar" style="width: ${rec.confidence_score}%; background: ${rec.confidence_level.color};"></div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('alternativesCard').style.display = 'none';
+            }
+            
+            // Profil
+            const profile = res.profile_analysis;
+            document.getElementById('profileContent').innerHTML = `
+                <div class="profile-stat">
+                    <h4><i class="fas fa-road"></i> Stade de Carrière</h4>
+                    <p>${profile.career_stage}</p>
+                </div>
+                <div class="profile-stat">
+                    <h4><i class="fas fa-brain"></i> Capacité d'Apprentissage</h4>
+                    <p>${profile.learning_capacity}</p>
+                </div>
+                <div class="profile-stat">
+                    <h4><i class="fas fa-clock"></i> Disponibilité</h4>
+                    <p>${profile.time_availability}</p>
+                </div>
+                <div class="profile-stat">
+                    <h4><i class="fas fa-bolt"></i> Tolérance au Risque</h4>
+                    <p>${profile.risk_tolerance}</p>
+                </div>
+                ${profile.recommendations.length > 0 ? `
+                <div class="profile-stat" style="grid-column: 1 / -1;">
+                    <h4><i class="fas fa-lightbulb"></i> Conseils Personnalisés</h4>
+                    <p>${profile.recommendations.join(' • ')}</p>
+                </div>` : ''}
+            `;
+        }
+        
+        function resetForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('resultSection').style.display = 'none';
+            document.querySelector('.card.animate-fade-in').scrollIntoView({ behavior: 'smooth' });
+        }
     </script>
 
     <script>
@@ -219,6 +504,68 @@
         // Vérifier au chargement
         checkUnreadMessages();
     </script>
+
+    <!-- SocketIO pour notifications en temps réel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        const notifCountEl = document.getElementById('notifCount');
+
+        // Charger le compteur initial
+        function loadNotifCount() {
+            fetch('/api/notifications/unread_count')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.count > 0) {
+                        notifCountEl.textContent = data.count > 9 ? '9+' : data.count;
+                        notifCountEl.style.display = 'flex';
+                    } else {
+                        notifCountEl.style.display = 'none';
+                    }
+                });
+        }
+
+        // Recevoir une notification en temps réel
+        socket.on('new_notification', function(data) {
+            loadNotifCount();
+            showToast(data.title, data.message, data.type);
+        });
+
+        // Toast notification popup
+        function showToast(title, message, type) {
+            const toast = document.createElement('div');
+            toast.className = 'notification-toast';
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-bell" style="color: #667eea; font-size: 1.2rem;"></i>
+                    <div>
+                        <strong style="display: block; margin-bottom: 2px;">${title}</strong>
+                        <span style="font-size: 0.85rem; color: #666;">${message}</span>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;cursor:pointer;margin-left:auto;font-size:1.2rem;color:#999;">&times;</button>
+                </div>
+            `;
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;background:white;padding:1rem 1.5rem;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.15);z-index:10000;min-width:300px;animation:slideIn 0.3s ease;border-left:4px solid #667eea;';
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        loadNotifCount();
+        setInterval(loadNotifCount, 60000);
+    </script>
+
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+
     <!-- Scripts -->
     <script src="/static/js/theme-toggle.js"></script>
     <script src="/static/js/app.js"></script>

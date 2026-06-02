@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+from flask_socketio import SocketIO, emit, join_room
 from pymongo import MongoClient
 import joblib
 import numpy as np
@@ -150,6 +151,9 @@ def get_confidence_level(score):
 # Créer l'application Flask
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "votre_cle_secrete_plus_complexe_123!")
+
+# Initialiser SocketIO
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Initialiser CSRF Protection
 # csrf = CSRFProtect(app)  # Commenté temporairement
@@ -332,33 +336,7 @@ def register():
 @app.route("/", methods=["GET", "POST"])
 @login_required
 def index():
-    prediction = None
-    if request.method == "POST":
-        nom = request.form["nom"]
-        prenom = request.form["prenom"]
-        age = int(request.form["age"])
-        experience = int(request.form["experience"])
-        competence = request.form["competence"]
-
-        comp_encoded = comp_dict.get(competence.lower(), 0)
-        features = np.array([[age, experience, comp_encoded]])
-        pred = model.predict(features)[0]
-        formation = inv_form_dict[pred]
-
-        collection.insert_one({
-            "nom": nom,
-            "prenom": prenom,
-            "age": age,
-            "experience": experience,
-            "competence": competence,
-            "formation_suggeree": formation,
-            "created_by": session["username"],  # Ajouter le username
-            "created_at": datetime.now()
-        })
-
-        prediction = formation
-
-    return render_template("index.html", competences=competences, prediction=prediction)
+    return render_template("index.html", competences=competences, prediction=None)
 
 @app.route("/historique")
 @admin_required
@@ -567,6 +545,15 @@ def predict_advanced():
         }
         
         collection.insert_one(prediction_data)
+        
+        # Envoyer une notification à l'utilisateur
+        send_notification(
+            session["username"],
+            "prediction",
+            "Nouvelle recommandation",
+            f"Formation recommandée : {top_recommendations[0]['formation']} (score: {top_recommendations[0]['confidence_score']}%)",
+            link="/mes_predictions"
+        )
         
         return jsonify({
             "success": True,
@@ -1016,6 +1003,15 @@ def send_message():
     }
     
     messages_collection.insert_one(message_data)
+    
+    # Envoyer une notification en temps réel au destinataire
+    send_notification(
+        to_user,
+        "info",
+        "Nouveau message",
+        f"Vous avez reçu un message de {session['username']}",
+        link="/messages"
+    )
     
     # Logger l'action
     from utils import log_user_action
@@ -1738,5 +1734,136 @@ def biometric_status():
 def biometric_setup():
     return render_template("biometric_setup.html")
 
+# ==================== SYSTÈME DE NOTIFICATIONS EN TEMPS RÉEL ====================
+
+@socketio.on('connect')
+def handle_connect():
+    if session.get('logged_in'):
+        username = session.get('username')
+        join_room(username)
+        print(f"[SocketIO] {username} connecté aux notifications")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    username = session.get('username', 'unknown')
+    print(f"[SocketIO] {username} déconnecté")
+
+def send_notification(recipient, notif_type, title, message, link=None):
+    """Envoie une notification en temps réel et la sauvegarde en base"""
+    notification = {
+        "recipient": recipient,
+        "type": notif_type,
+        "title": title,
+        "message": message,
+        "link": link,
+        "read": False,
+        "created_at": datetime.now()
+    }
+    db["notifications"].insert_one(notification)
+    # Émettre en temps réel vers l'utilisateur
+    notification["_id"] = str(notification["_id"])
+    notification["created_at"] = notification["created_at"].strftime("%d/%m/%Y %H:%M")
+    socketio.emit('new_notification', notification, room=recipient)
+
+@app.route("/notifications")
+@login_required
+def notifications_page():
+    username = session["username"]
+    notifications = list(db["notifications"].find(
+        {"recipient": username}
+    ).sort("created_at", -1).limit(50))
+    for n in notifications:
+        n["_id"] = str(n["_id"])
+    return render_template("notifications.html", notifications=notifications)
+
+@app.route("/api/notifications")
+@login_required
+def get_notifications():
+    username = session["username"]
+    notifications = list(db["notifications"].find(
+        {"recipient": username}
+    ).sort("created_at", -1).limit(20))
+    for n in notifications:
+        n["_id"] = str(n["_id"])
+        n["created_at"] = n["created_at"].strftime("%d/%m/%Y %H:%M")
+    return jsonify({"notifications": notifications})
+
+@app.route("/api/notifications/unread_count")
+@login_required
+def unread_count():
+    username = session["username"]
+    count = db["notifications"].count_documents({"recipient": username, "read": False})
+    return jsonify({"count": count})
+
+@app.route("/api/notifications/mark_read", methods=["POST"])
+@login_required
+def mark_notification_read():
+    notif_id = request.json.get("id")
+    if notif_id:
+        db["notifications"].update_one(
+            {"_id": ObjectId(notif_id), "recipient": session["username"]},
+            {"$set": {"read": True}}
+        )
+    return jsonify({"success": True})
+
+@app.route("/api/notifications/mark_all_read", methods=["POST"])
+@login_required
+def mark_all_read():
+    username = session["username"]
+    db["notifications"].update_many(
+        {"recipient": username, "read": False},
+        {"$set": {"read": True}}
+    )
+    return jsonify({"success": True})
+
+@app.route("/api/notifications/send", methods=["POST"])
+@admin_required
+def admin_send_notification():
+    """Permet à l'admin d'envoyer une notification à un utilisateur"""
+    data = request.json
+    recipient = data.get("recipient")
+    title = data.get("title")
+    message = data.get("message")
+    
+    if not all([recipient, title, message]):
+        return jsonify({"success": False, "error": "Champs manquants"}), 400
+    
+    # Vérifier que l'utilisateur existe
+    user = db["utilisateurs"].find_one({"username": recipient})
+    if not user:
+        return jsonify({"success": False, "error": "Utilisateur non trouvé"}), 404
+    
+    send_notification(recipient, "admin_message", title, message)
+    return jsonify({"success": True})
+
+@app.route("/api/notifications/broadcast", methods=["POST"])
+@admin_required
+def admin_broadcast_notification():
+    """Envoie une notification à tous les utilisateurs"""
+    data = request.json
+    title = data.get("title")
+    message = data.get("message")
+    
+    if not all([title, message]):
+        return jsonify({"success": False, "error": "Champs manquants"}), 400
+    
+    users = db["utilisateurs"].find({}, {"username": 1})
+    count = 0
+    for user in users:
+        send_notification(user["username"], "broadcast", title, message)
+        count += 1
+    
+    return jsonify({"success": True, "sent_to": count})
+
+@app.route("/api/notifications/delete", methods=["POST"])
+@login_required
+def delete_notification():
+    notif_id = request.json.get("id")
+    if notif_id:
+        db["notifications"].delete_one(
+            {"_id": ObjectId(notif_id), "recipient": session["username"]}
+        )
+    return jsonify({"success": True})
+
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5555)
+    socketio.run(app, debug=True, host="0.0.0.0", port=5555)

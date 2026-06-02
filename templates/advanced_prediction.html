@@ -6,435 +6,786 @@
     <title>Prédictions Avancées - Formation IA</title>
     <link rel="stylesheet" href="/static/css/modern-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .recommendation-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 15px 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-left: 5px solid var(--primary-color);
-            transition: all 0.3s ease;
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #28a745, #20c997);
         }
         
-        .recommendation-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        .prediction-layout {
+            max-width: 1100px;
+            margin: 0 auto;
         }
-        
-        .confidence-badge {
-            display: inline-flex;
+
+        .form-card {
+            background: var(--card-bg, #fff);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(102,126,234,0.1);
+        }
+
+        .form-card .card-header {
+            display: flex;
             align-items: center;
-            padding: 8px 15px;
-            border-radius: 25px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(102,126,234,0.1);
         }
-        
-        .formation-title {
+
+        .form-card .header-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 15px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        }
+
+        .form-card .header-text h2 {
             font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--text-primary);
+            color: var(--text-primary, #333);
+            margin: 0;
         }
-        
-        .score-circle {
-            width: 80px;
-            height: 80px;
+
+        .form-card .header-text p {
+            color: var(--text-secondary, #666);
+            margin: 0.3rem 0 0 0;
+            font-size: 0.9rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-group { position: relative; }
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary, #333);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group label i {
+            margin-right: 6px;
+            color: #667eea;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid rgba(102,126,234,0.15);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(102,126,234,0.03);
+            transition: all 0.3s ease;
+            color: var(--text-primary, #333);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+            background: white;
+        }
+
+        .submit-section {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid rgba(102,126,234,0.1);
+        }
+
+        .btn-predict {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(102,126,234,0.35);
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102,126,234,0.45);
+        }
+
+        .btn-predict:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .loading-dots span {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: bounce 1.4s ease-in-out infinite;
+        }
+
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Results */
+        .results-section { display: none; margin-top: 2rem; }
+
+        .top-result-card {
+            background: var(--card-bg, #fff);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(40,167,69,0.2);
+        }
+
+        .top-result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--success-gradient);
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(40,167,69,0.1);
+            color: #28a745;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-score-ring {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: white;
-            margin-right: 20px;
+            margin: 0 auto 1.5rem;
+            position: relative;
         }
-        
+
+        .result-score-ring svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotate(-90deg);
+        }
+
+        .score-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary, #333);
+        }
+
+        .score-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .result-formation-name {
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-description {
+            color: var(--text-secondary, #666);
+            font-size: 1.05rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
         .details-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            gap: 1.2rem;
+            margin-top: 2rem;
         }
-        
-        .detail-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
+
+        .detail-card {
+            background: rgba(102,126,234,0.04);
+            border: 1px solid rgba(102,126,234,0.1);
+            border-radius: 14px;
+            padding: 1.5rem;
             text-align: center;
+            transition: all 0.3s ease;
         }
-        
-        .reasons-list {
-            list-style: none;
-            padding: 0;
+
+        .detail-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102,126,234,0.12);
         }
-        
-        .reasons-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+
+        .detail-card i {
+            font-size: 1.6rem;
+            margin-bottom: 0.7rem;
+            display: block;
         }
-        
-        .reasons-list li:before {
-            content: "✓";
-            color: #28a745;
-            font-weight: bold;
-            margin-right: 10px;
+
+        .detail-card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
         }
-        
-        .profile-analysis {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .detail-card .value {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Alternatives */
+        .alternatives-card {
+            background: var(--card-bg, #fff);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-top: 2rem;
+        }
+
+        .alternatives-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .alternatives-card h3 i { color: #667eea; }
+
+        .rec-item {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem;
+            border-radius: 14px;
+            margin-bottom: 0.8rem;
+            background: rgba(102,126,234,0.03);
+            border: 1px solid rgba(102,126,234,0.08);
+            transition: all 0.3s ease;
+            animation: slideIn 0.4s ease forwards;
+            opacity: 0;
+        }
+
+        .rec-item:hover {
+            transform: translateX(8px);
+            background: rgba(102,126,234,0.07);
+            box-shadow: 0 4px 15px rgba(102,126,234,0.1);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .rec-rank {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
             color: white;
-            padding: 25px;
-            border-radius: 15px;
-            margin: 20px 0;
+            margin-right: 1.2rem;
+            flex-shrink: 0;
         }
-        
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            padding: 40px;
+
+        .rec-info { flex: 1; }
+        .rec-name { font-weight: 600; font-size: 1.05rem; color: var(--text-primary); margin-bottom: 3px; }
+        .rec-meta { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: var(--text-secondary); }
+
+        .rec-score-bar {
+            width: 120px;
+            height: 6px;
+            background: rgba(0,0,0,0.06);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-left: auto;
         }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+
+        .rec-score-bar .fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0;
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        .rec-score-value {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-left: 1rem;
+            min-width: 45px;
+            text-align: right;
         }
-        
-        .btn {
+
+        /* Profile */
+        .profile-card {
+            background: var(--card-bg, #fff);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-top: 2rem;
+        }
+
+        .profile-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .profile-item {
+            background: linear-gradient(135deg, rgba(102,126,234,0.05), rgba(118,75,162,0.05));
+            border: 1px solid rgba(102,126,234,0.1);
+            border-radius: 14px;
+            padding: 1.3rem;
+        }
+
+        .profile-item .pi-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .profile-item .pi-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .reasons-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(102,126,234,0.1);
+        }
+
+        .reason-tag {
             display: inline-flex;
             align-items: center;
-            padding: 12px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 8px;
+            gap: 6px;
+            background: rgba(40,167,69,0.08);
+            color: #28a745;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin: 4px;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 2.5rem;
+            padding: 1.5rem;
+            background: var(--card-bg, #fff);
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
             transition: all 0.3s ease;
-            cursor: pointer;
+            border: 2px solid transparent;
         }
-        
-        .btn i {
-            margin-right: 8px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-            color: white;
-        }
-        
-        .btn-info {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-            color: white;
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-            color: #212529;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+
+        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .nav-btn.primary { background: var(--primary-gradient); color: white; }
+        .nav-btn.secondary { background: rgba(102,126,234,0.1); color: #667eea; border-color: rgba(102,126,234,0.2); }
+        .nav-btn.info { background: rgba(23,162,184,0.1); color: #17a2b8; border-color: rgba(23,162,184,0.2); }
+        .nav-btn.warning { background: rgba(255,193,7,0.1); color: #d39e00; border-color: rgba(255,193,7,0.2); }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .details-grid { grid-template-columns: 1fr 1fr; }
+            .rec-item { flex-wrap: wrap; gap: 0.5rem; }
         }
     </style>
 </head>
 <body>
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="navbar-brand">
-            <i class="fas fa-brain"></i> Formation IA - Prédictions Avancées
+            <i class="fas fa-brain"></i> Formation IA
         </div>
         <div class="navbar-nav">
             <div class="navbar-user">
-                <i class="fas fa-user-circle"></i>
+                {% if session.get('avatar_type') == 'file' %}
+                    <img src="{{ session.user_avatar }}" alt="Avatar" style="width: 35px; height: 35px; object-fit: cover; border-radius: 50%;">
+                {% else %}
+                    <i class="{{ session.user_avatar or 'fas fa-user-circle' }}"></i>
+                {% endif %}
                 <span>{{ session.username }}</span>
+                <span style="background: linear-gradient(135deg, #ffc107, #fd7e14); color: #000; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                    <i class="fas fa-crown"></i> Admin
+                </span>
             </div>
+            <a href="{{ url_for('index') }}" class="navbar-link"><i class="fas fa-home"></i> Accueil</a>
+            <a href="{{ url_for('dashboard') }}" class="navbar-link"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="{{ url_for('historique') }}" class="navbar-link"><i class="fas fa-history"></i> Historique</a>
+            <a href="{{ url_for('logout') }}" class="navbar-link"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
         </div>
     </nav>
 
     <div class="container">
-        <!-- Hero Section -->
-        <div class="card animate-fade-in" style="text-align: center; margin-bottom: 2rem;">
-            <div class="card-icon" style="margin: 0 auto 1rem;">
-                <i class="fas fa-magic"></i>
+        <div class="prediction-layout">
+            <!-- Header -->
+            <div style="text-align: center; padding: 2rem 0 1rem;">
+                <div style="display: inline-flex; align-items: center; gap: 12px; background: rgba(102,126,234,0.08); padding: 8px 20px; border-radius: 25px; margin-bottom: 1rem;">
+                    <i class="fas fa-magic" style="color: #667eea;"></i>
+                    <span style="font-weight: 600; color: #667eea; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Prédictions Avancées</span>
+                </div>
+                <h1 style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary, #333); margin-bottom: 0.5rem;">
+                    Recommandations Intelligentes
+                </h1>
+                <p style="color: var(--text-secondary, #666); font-size: 1.05rem; max-width: 600px; margin: 0 auto;">
+                    Analyse avancée avec scores de confiance, profil détaillé et recommandations personnalisées
+                </p>
             </div>
-            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">
-                Recommandations Intelligentes
-            </h1>
-            <p style="font-size: 1.2rem; color: var(--text-secondary);">
-                Obtenez des recommandations personnalisées avec scores de confiance et analyse détaillée
-            </p>
-        </div>
 
-        <!-- Formulaire -->
-        <div class="card">
-            <div class="card-header">
-                <h3><i class="fas fa-user-edit"></i> Informations du Candidat</h3>
+            <!-- Formulaire -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="header-icon">
+                        <i class="fas fa-user-edit"></i>
+                    </div>
+                    <div class="header-text">
+                        <h2>Informations du Candidat</h2>
+                        <p>Remplissez les informations pour obtenir une analyse détaillée</p>
+                    </div>
+                </div>
+
+                <form id="advancedPredictionForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Nom</label>
+                            <input type="text" name="nom" required placeholder="Ex: Dupont">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Prénom</label>
+                            <input type="text" name="prenom" required placeholder="Ex: Marie">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-birthday-cake"></i> Âge</label>
+                            <input type="number" name="age" required min="16" max="70" placeholder="Ex: 28">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-briefcase"></i> Expérience (années)</label>
+                            <input type="number" name="experience" required min="0" max="50" placeholder="Ex: 3">
+                        </div>
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-cogs"></i> Compétence principale</label>
+                            <select name="competence" required>
+                                <option value="">Sélectionnez une compétence...</option>
+                                {% for comp in competences %}
+                                    <option value="{{ comp }}">{{ comp.title() }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="submit-section">
+                        <button type="submit" class="btn-predict" id="submitBtn">
+                            <i class="fas fa-magic"></i> Analyser et Recommander
+                        </button>
+                    </div>
+                </form>
             </div>
-            <form id="advancedPredictionForm">
-                <div class="grid grid-2">
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-user"></i> Nom
-                        </label>
-                        <input type="text" name="nom" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-user"></i> Prénom
-                        </label>
-                        <input type="text" name="prenom" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-birthday-cake"></i> Âge
-                        </label>
-                        <input type="number" name="age" class="form-control" required min="16" max="70">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-briefcase"></i> Années d'expérience
-                        </label>
-                        <input type="number" name="experience" class="form-control" required min="0" max="50">
-                    </div>
+
+            <!-- Loading -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-dots">
+                    <span></span><span></span><span></span>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-cogs"></i> Compétence principale
-                    </label>
-                    <select name="competence" class="form-control" required>
-                        <option value="">Sélectionnez une compétence</option>
-                        {% for comp in competences %}
-                            <option value="{{ comp }}">{{ comp.title() }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">Analyse en cours...</h3>
+                <p style="color: var(--text-secondary);">Notre IA analyse le profil pour générer des recommandations personnalisées</p>
+            </div>
+
+            <!-- Results -->
+            <div class="results-section" id="resultsSection">
+                <div class="top-result-card" id="topResultCard"></div>
+                <div class="alternatives-card" id="alternativesCard" style="display:none;"></div>
+                <div class="profile-card" id="profileCard"></div>
                 <div style="text-align: center; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-magic"></i> Analyser et Recommander
+                    <button onclick="resetAll()" class="btn-predict" style="background: linear-gradient(135deg, #6c757d, #495057);">
+                        <i class="fas fa-redo"></i> Nouvelle Analyse
                     </button>
                 </div>
-            </form>
-        </div>
-
-        <!-- Loading -->
-        <div class="loading-spinner" id="loadingSpinner">
-            <div class="spinner"></div>
-            <h3>Analyse en cours...</h3>
-            <p>Notre IA analyse votre profil pour vous proposer les meilleures recommandations</p>
-        </div>
-
-        <!-- Résultats -->
-        <div id="resultsContainer" style="display: none;">
-            <!-- Analyse du profil -->
-            <div class="profile-analysis" id="profileAnalysis">
-                <!-- Généré dynamiquement -->
             </div>
 
-            <!-- Recommandations -->
-            <div id="recommendationsContainer">
-                <!-- Généré dynamiquement -->
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <div style="text-align: center; margin-top: 30px; padding: 20px;">
-            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                <h3 style="margin-bottom: 20px; color: var(--text-primary);">
-                    <i class="fas fa-compass"></i> Navigation
-                </h3>
-                <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-                    <a href="{{ url_for('index') }}" class="btn btn-primary">
-                        <i class="fas fa-home"></i> Accueil
-                    </a>
-                    
-                    {% if session.role == 'admin' %}
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-                            <i class="fas fa-chart-line"></i> Dashboard
-                        </a>
-                        <a href="{{ url_for('historique') }}" class="btn btn-info">
-                            <i class="fas fa-history"></i> Historique
-                        </a>
-                        <a href="{{ url_for('admin_users') }}" class="btn btn-warning">
-                            <i class="fas fa-users-cog"></i> Utilisateurs
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('mes_predictions') }}" class="btn btn-info">
-                            <i class="fas fa-list"></i> Mes Prédictions
-                        </a>
-                        <a href="{{ url_for('mon_profil') }}" class="btn btn-secondary">
-                            <i class="fas fa-user-edit"></i> Mon Profil
-                        </a>
-                    {% endif %}
-                </div>
+            <!-- Navigation -->
+            <div class="nav-bar">
+                <a href="{{ url_for('index') }}" class="nav-btn primary"><i class="fas fa-home"></i> Accueil</a>
+                <a href="{{ url_for('dashboard') }}" class="nav-btn secondary"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="{{ url_for('historique') }}" class="nav-btn info"><i class="fas fa-history"></i> Historique</a>
+                <a href="{{ url_for('admin_users') }}" class="nav-btn warning"><i class="fas fa-users-cog"></i> Utilisateurs</a>
             </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('advancedPredictionForm').addEventListener('submit', async function(e) {
+        const form = document.getElementById('advancedPredictionForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loadingOverlay');
+        const results = document.getElementById('resultsSection');
+
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Afficher le loading
-            document.getElementById('loadingSpinner').style.display = 'block';
-            document.getElementById('resultsContainer').style.display = 'none';
-            
-            // Collecter les données
-            const formData = new FormData(this);
+
+            loading.style.display = 'block';
+            results.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse...';
+
+            const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
-            
+
             try {
                 const response = await fetch('/api/predict_advanced', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    displayResults(result);
+                    setTimeout(() => {
+                        loading.style.display = 'none';
+                        renderResults(result);
+                        results.style.display = 'block';
+                        results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 900);
                 } else {
-                    alert('Erreur: ' + result.error);
+                    loading.style.display = 'none';
+                    alert('Erreur: ' + (result.error || 'Erreur inconnue'));
                 }
             } catch (error) {
+                loading.style.display = 'none';
                 alert('Erreur de connexion: ' + error.message);
             } finally {
-                document.getElementById('loadingSpinner').style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-magic"></i> Analyser et Recommander';
             }
         });
-        
-        function displayResults(result) {
-            // Afficher l'analyse du profil
-            displayProfileAnalysis(result.profile_analysis);
-            
-            // Afficher les recommandations
-            displayRecommendations(result.recommendations);
-            
-            // Afficher le conteneur de résultats
-            document.getElementById('resultsContainer').style.display = 'block';
-            
-            // Scroll vers les résultats
-            document.getElementById('resultsContainer').scrollIntoView({ 
-                behavior: 'smooth' 
-            });
-        }
-        
-        function displayProfileAnalysis(analysis) {
-            const container = document.getElementById('profileAnalysis');
-            container.innerHTML = `
-                <h3><i class="fas fa-user-chart"></i> Analyse de Votre Profil</h3>
-                <div class="grid grid-2" style="margin-top: 20px;">
-                    <div>
-                        <h4>Stade de Carrière</h4>
-                        <p>${analysis.career_stage}</p>
-                        <h4>Capacité d'Apprentissage</h4>
-                        <p>${analysis.learning_capacity}</p>
-                    </div>
-                    <div>
-                        <h4>Recommandations Personnalisées</h4>
-                        <ul>
-                            ${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                        </ul>
+
+        function renderResults(data) {
+            const top = data.recommendations[0];
+            const details = top.details;
+
+            const scorePercent = top.confidence_score;
+            const circumference = 2 * Math.PI * 50;
+            const dashOffset = circumference - (scorePercent / 100) * circumference;
+
+            document.getElementById('topResultCard').innerHTML = `
+                <div class="result-badge"><i class="fas fa-trophy"></i> Meilleure Recommandation</div>
+                
+                <div class="result-score-ring">
+                    <svg width="120" height="120">
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="8"/>
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="${top.confidence_level.color}" stroke-width="8" 
+                            stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}" 
+                            stroke-linecap="round" style="transition: stroke-dashoffset 1.5s ease;"/>
+                    </svg>
+                    <div style="text-align: center;">
+                        <div class="score-text">${scorePercent}%</div>
+                        <div class="score-label">confiance</div>
                     </div>
                 </div>
+
+                <div class="result-formation-name">${top.formation}</div>
+                <div class="result-description">${details.description || 'Formation spécialisée adaptée au profil'}</div>
+
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <i class="fas fa-clock" style="color: #667eea;"></i>
+                        <div class="label">Durée</div>
+                        <div class="value">${details.duration || 'Variable'}</div>
+                    </div>
+                    <div class="detail-card">
+                        <i class="fas fa-signal" style="color: #fd7e14;"></i>
+                        <div class="label">Difficulté</div>
+                        <div class="value">${details.difficulty || 'Modérée'}</div>
+                    </div>
+                    <div class="detail-card">
+                        <i class="fas fa-euro-sign" style="color: #28a745;"></i>
+                        <div class="label">Salaire</div>
+                        <div class="value">${details.salary_range || 'Variable'}</div>
+                    </div>
+                    <div class="detail-card">
+                        <i class="fas fa-rocket" style="color: #dc3545;"></i>
+                        <div class="label">Opportunités</div>
+                        <div class="value">${details.job_opportunities || 'Bonnes'}</div>
+                    </div>
+                </div>
+
+                ${top.reasons && top.reasons.length > 0 ? `
+                <div class="reasons-section">
+                    <h4 style="margin-bottom: 0.8rem; color: var(--text-primary);"><i class="fas fa-lightbulb" style="color: #ffc107;"></i> Pourquoi cette recommandation ?</h4>
+                    <div>${top.reasons.map(r => `<span class="reason-tag"><i class="fas fa-check"></i> ${r}</span>`).join('')}</div>
+                </div>` : ''}
+
+                ${details.industries ? `
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.06);">
+                    <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Secteurs : </span>
+                    ${details.industries.map(ind => `<span style="display: inline-block; background: var(--primary-gradient); color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; margin: 3px;">${ind}</span>`).join('')}
+                </div>` : ''}
             `;
-        }
-        
-        function displayRecommendations(recommendations) {
-            const container = document.getElementById('recommendationsContainer');
-            
-            const html = recommendations.map((rec, index) => `
-                <div class="recommendation-card">
-                    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                        <div class="score-circle" style="background: ${rec.confidence_level.color};">
-                            ${rec.confidence_score}%
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                <span style="background: gold; color: black; padding: 5px 10px; border-radius: 15px; font-weight: bold; margin-right: 15px;">
-                                    #${index + 1}
-                                </span>
-                                <div class="confidence-badge" style="background: ${rec.confidence_level.color}; color: white;">
-                                    <i class="${rec.confidence_level.icon}" style="margin-right: 8px;"></i>
-                                    Confiance ${rec.confidence_level.level}
+
+            // Alternatives
+            const alts = data.recommendations.slice(1);
+            const altCard = document.getElementById('alternativesCard');
+            if (alts.length > 0) {
+                altCard.style.display = 'block';
+                const colors = ['#667eea', '#28a745', '#fd7e14', '#dc3545', '#17a2b8'];
+                altCard.innerHTML = `
+                    <h3><i class="fas fa-list-ol"></i> Autres Recommandations</h3>
+                    ${alts.map((rec, i) => `
+                        <div class="rec-item" style="animation-delay: ${(i+1)*0.15}s;">
+                            <div class="rec-rank" style="background: ${colors[(i+1) % colors.length]};">#${i+2}</div>
+                            <div class="rec-info">
+                                <div class="rec-name">${rec.formation}</div>
+                                <div class="rec-meta">
+                                    <span><i class="${rec.confidence_level.icon}" style="color:${rec.confidence_level.color};"></i> ${rec.confidence_level.level}</span>
+                                    <span>${rec.details.difficulty || ''}</span>
                                 </div>
                             </div>
-                            <h3 class="formation-title">${rec.formation}</h3>
-                            <p style="color: var(--text-secondary); margin: 0;">
-                                ${rec.details.description || 'Formation spécialisée'}
-                            </p>
+                            <div class="rec-score-bar">
+                                <div class="fill" style="background: ${rec.confidence_level.color};" data-width="${rec.confidence_score}%"></div>
+                            </div>
+                            <div class="rec-score-value" style="color: ${rec.confidence_level.color};">${rec.confidence_score}%</div>
                         </div>
+                    `).join('')}
+                `;
+                setTimeout(() => {
+                    document.querySelectorAll('.rec-score-bar .fill').forEach(bar => {
+                        bar.style.width = bar.dataset.width;
+                    });
+                }, 300);
+            } else {
+                altCard.style.display = 'none';
+            }
+
+            // Profile
+            const profile = data.profile_analysis;
+            document.getElementById('profileCard').innerHTML = `
+                <h3><i class="fas fa-user-chart" style="color: #667eea;"></i> Analyse du Profil</h3>
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <div class="pi-label"><i class="fas fa-road" style="color:#667eea;"></i> Stade de Carrière</div>
+                        <div class="pi-value">${profile.career_stage}</div>
                     </div>
-                    
-                    <div class="details-grid">
-                        <div class="detail-item">
-                            <i class="fas fa-clock" style="color: var(--primary-color); margin-bottom: 8px;"></i>
-                            <div><strong>Durée</strong></div>
-                            <div>${rec.details.duration || 'Variable'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-chart-line" style="color: var(--success-color); margin-bottom: 8px;"></i>
-                            <div><strong>Difficulté</strong></div>
-                            <div>${rec.details.difficulty || 'Modérée'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-euro-sign" style="color: var(--warning-color); margin-bottom: 8px;"></i>
-                            <div><strong>Salaire</strong></div>
-                            <div>${rec.details.salary_range || 'Variable'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-briefcase" style="color: var(--info-color); margin-bottom: 8px;"></i>
-                            <div><strong>Opportunités</strong></div>
-                            <div>${rec.details.job_opportunities || 'Bonnes'}</div>
-                        </div>
+                    <div class="profile-item">
+                        <div class="pi-label"><i class="fas fa-brain" style="color:#28a745;"></i> Capacité d'Apprentissage</div>
+                        <div class="pi-value">${profile.learning_capacity}</div>
                     </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <h4><i class="fas fa-lightbulb"></i> Pourquoi cette recommandation ?</h4>
-                        <ul class="reasons-list">
-                            ${rec.reasons.map(reason => `<li>${reason}</li>`).join('')}
-                        </ul>
+                    <div class="profile-item">
+                        <div class="pi-label"><i class="fas fa-clock" style="color:#fd7e14;"></i> Disponibilité</div>
+                        <div class="pi-value">${profile.time_availability}</div>
                     </div>
-                    
-                    ${rec.details.industries ? `
-                        <div style="margin-top: 15px;">
-                            <strong>Secteurs d'activité :</strong>
-                            ${rec.details.industries.map(industry => 
-                                `<span style="background: var(--primary-color); color: white; padding: 4px 8px; border-radius: 12px; margin: 0 5px; font-size: 0.8rem;">${industry}</span>`
-                            ).join('')}
-                        </div>
-                    ` : ''}
+                    <div class="profile-item">
+                        <div class="pi-label"><i class="fas fa-bolt" style="color:#dc3545;"></i> Tolérance au Risque</div>
+                        <div class="pi-value">${profile.risk_tolerance}</div>
+                    </div>
+                    ${profile.recommendations.length > 0 ? `
+                    <div class="profile-item" style="grid-column: 1 / -1;">
+                        <div class="pi-label"><i class="fas fa-lightbulb" style="color:#ffc107;"></i> Conseils Personnalisés</div>
+                        <div class="pi-value">${profile.recommendations.join(' • ')}</div>
+                    </div>` : ''}
                 </div>
-            `).join('');
-            
-            container.innerHTML = `
-                <h2 style="text-align: center; margin-bottom: 30px;">
-                    <i class="fas fa-star"></i> Vos Recommandations Personnalisées
-                </h2>
-                ${html}
             `;
+        }
+
+        function resetAll() {
+            form.reset();
+            results.style.display = 'none';
+            document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
 </html>
-

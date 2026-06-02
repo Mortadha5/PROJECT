@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Formation IA</title>
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .notifications-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .notification-item {
+            background: var(--card-bg, #fff);
+            border: 1px solid var(--border-color, #e0e0e0);
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .notification-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .notification-item.unread {
+            border-left: 4px solid #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        .notification-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.2rem;
+            color: white;
+        }
+        .notification-icon.info { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .notification-icon.success { background: linear-gradient(135deg, #28a745, #20c997); }
+        .notification-icon.warning { background: linear-gradient(135deg, #ffc107, #fd7e14); }
+        .notification-icon.admin_message { background: linear-gradient(135deg, #dc3545, #e83e8c); }
+        .notification-icon.broadcast { background: linear-gradient(135deg, #17a2b8, #6610f2); }
+        .notification-icon.prediction { background: linear-gradient(135deg, #28a745, #20c997); }
+        .notification-content {
+            flex: 1;
+        }
+        .notification-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+            color: var(--text-primary, #333);
+        }
+        .notification-message {
+            color: var(--text-secondary, #666);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .notification-time {
+            font-size: 0.8rem;
+            color: var(--text-muted, #999);
+            margin-top: 0.4rem;
+        }
+        .notification-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .notification-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.4rem;
+            border-radius: 6px;
+            color: var(--text-secondary, #666);
+            transition: all 0.2s;
+        }
+        .notification-actions button:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+        .notification-actions button.delete-btn:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        .notifications-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .notifications-header h1 {
+            font-size: 1.8rem;
+            background: var(--primary-gradient, linear-gradient(135deg, #667eea, #764ba2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .mark-all-btn {
+            background: var(--primary-gradient, linear-gradient(135deg, #667eea, #764ba2));
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .mark-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .empty-notifications {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary, #666);
+        }
+        .empty-notifications i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-brain"></i> Formation IA
+        </div>
+        <div class="navbar-nav">
+            <a href="{{ url_for('index') }}" class="navbar-link">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+            <a href="{{ url_for('notifications_page') }}" class="navbar-link active">
+                <i class="fas fa-bell"></i> Notifications
+            </a>
+            <a href="{{ url_for('logout') }}" class="navbar-link">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="notifications-container">
+            <div class="notifications-header">
+                <h1><i class="fas fa-bell"></i> Mes Notifications</h1>
+                <button class="mark-all-btn" onclick="markAllRead()">
+                    <i class="fas fa-check-double"></i> Tout marquer comme lu
+                </button>
+            </div>
+
+            {% if notifications %}
+                {% for notif in notifications %}
+                <div class="notification-item {{ 'unread' if not notif.read else '' }}" id="notif-{{ notif._id }}">
+                    <div class="notification-icon {{ notif.type }}">
+                        {% if notif.type == 'admin_message' %}
+                            <i class="fas fa-crown"></i>
+                        {% elif notif.type == 'broadcast' %}
+                            <i class="fas fa-bullhorn"></i>
+                        {% elif notif.type == 'prediction' %}
+                            <i class="fas fa-chart-line"></i>
+                        {% elif notif.type == 'success' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% elif notif.type == 'warning' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">{{ notif.title }}</div>
+                        <div class="notification-message">{{ notif.message }}</div>
+                        <div class="notification-time">
+                            <i class="far fa-clock"></i> {{ notif.created_at.strftime('%d/%m/%Y à %H:%M') if notif.created_at is string == false else notif.created_at }}
+                        </div>
+                    </div>
+                    <div class="notification-actions">
+                        {% if not notif.read %}
+                        <button onclick="markRead('{{ notif._id }}')" title="Marquer comme lu">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        {% endif %}
+                        <button class="delete-btn" onclick="deleteNotification('{{ notif._id }}')" title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-notifications">
+                    <i class="fas fa-bell-slash"></i>
+                    <h3>Aucune notification</h3>
+                    <p>Vous n'avez pas encore de notifications.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        socket.on('new_notification', function(data) {
+            location.reload();
+        });
+
+        function markRead(id) {
+            fetch('/api/notifications/mark_read', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id})
+            }).then(() => {
+                const el = document.getElementById('notif-' + id);
+                if (el) el.classList.remove('unread');
+                el.querySelector('.notification-actions button:first-child')?.remove();
+            });
+        }
+
+        function markAllRead() {
+            fetch('/api/notifications/mark_all_read', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            }).then(() => {
+                document.querySelectorAll('.notification-item.unread').forEach(el => {
+                    el.classList.remove('unread');
+                });
+            });
+        }
+
+        function deleteNotification(id) {
+            fetch('/api/notifications/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id})
+            }).then(() => {
+                const el = document.getElementById('notif-' + id);
+                if (el) {
+                    el.style.transform = 'translateX(100%)';
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 300);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
