@@ -4,541 +4,229 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversation avec {{ other_user }}</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .chat-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .messages-area {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            height: 400px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-        }
-        
-        .message {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 10px;
-            max-width: 70%;
-        }
-        
-        .message.sent {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-            color: #333;
-            margin-left: auto;
-            text-align: right;
-        }
-        
-        .message.received {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-        }
-        
-        .message-header {
-            font-size: 0.8rem;
-            opacity: 0.8;
-            margin-bottom: 5px;
-        }
-        
-        .message-input {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .message-input input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            outline: none;
-            font-size: 1rem;
-            transition: border-color 0.2s ease;
-        }
-        
-        .message-input input:focus {
-            border-color: #ffc107;
-        }
-        
-        .message-input input::placeholder {
-            color: #999;
-        }
-        
-        .send-btn {
-            background: #ffc107;
-            color: #333;
-            border: none;
-            border-radius: 8px;
-            width: 50px;
-            height: 50px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            font-weight: 600;
-        }
-        
-        .send-btn:hover {
-            background: #e0a800;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        
-        .send-btn:active {
-            transform: translateY(0);
-        }
-        
-        .send-btn i {
-            font-size: 1.1rem;
-        }
-        
-        .send-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .send-btn:disabled:hover {
-            background: #ffc107;
-            transform: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        /* Navigation Moderne */
-        .navigation-section {
-            margin-top: 3rem;
-            padding: 2rem;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .nav-header {
+        body { font-size: 14px; }
+        .container { max-width: 800px; }
+
+        .chat-header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid rgba(255,193,7,0.2);
+            justify-content: space-between;
         }
-        
-        .nav-header i {
-            font-size: 1.5rem;
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .nav-header h3 {
-            margin: 0;
-            color: #333;
-            font-weight: 700;
-            font-size: 1.3rem;
-        }
-        
-        .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .nav-card {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1.5rem;
-            border-radius: 16px;
-            text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-        
-        .nav-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: left 0.6s ease;
-        }
-        
-        .nav-card:hover::before {
-            left: 100%;
-        }
-        
-        .nav-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            border-color: rgba(255,255,255,0.3);
-        }
-        
-        .nav-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
+        .chat-header-left { display: flex; align-items: center; gap: 0.75rem; }
+        .chat-header-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
-            color: white;
-            flex-shrink: 0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nav-icon::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-            transform: scale(0);
-            transition: transform 0.6s ease;
-        }
-        
-        .nav-card:hover .nav-icon::after {
-            transform: scale(1);
-        }
-        
-        .nav-content {
-            flex: 1;
-        }
-        
-        .nav-content h4 {
-            margin: 0 0 0.25rem 0;
+            color: #333;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
+        }
+        .chat-header-info h2 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0; }
+        .chat-header-info p { font-size: 0.75rem; color: var(--text-muted); margin: 0; }
+        .back-link {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: var(--transition-fast);
+        }
+        .back-link:hover { color: var(--text-primary); }
+
+        .messages-area {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.25rem;
+            height: 420px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            margin-bottom: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            max-width: 75%;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+        .message.sent {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
             color: #333;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
         }
-        
-        .nav-content p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: #666;
-            font-weight: 500;
+        .message.received {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
         }
-        
-        .nav-arrow {
-            font-size: 1.2rem;
-            color: #999;
-            transition: all 0.3s ease;
-            transform: translateX(0);
+        .message-header { font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.3rem; }
+
+        .message-input { display: flex; gap: 0.75rem; }
+        .message-input input {
+            flex: 1;
+            padding: 0.7rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
         }
-        
-        .nav-card:hover .nav-arrow {
-            color: #333;
-            transform: translateX(5px);
+        .message-input input:focus { outline: none; border-color: #ffc107; box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1); }
+        .send-btn {
+            width: 44px; height: 44px;
+            border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: #333; cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex; align-items: center; justify-content: center;
         }
-        
-        /* Couleurs des cartes */
-        .nav-card.primary .nav-icon {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .send-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .quick-nav {
+            display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;
         }
-        
-        .nav-card.primary:hover {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-        }
-        
-        .nav-card.secondary .nav-icon {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-        }
-        
-        .nav-card.secondary:hover {
-            background: linear-gradient(135deg, rgba(108, 117, 125, 0.05) 0%, rgba(73, 80, 87, 0.05) 100%);
-        }
-        
-        .nav-card.info .nav-icon {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-        }
-        
-        .nav-card.info:hover {
-            background: linear-gradient(135deg, rgba(23, 162, 184, 0.05) 0%, rgba(19, 132, 150, 0.05) 100%);
-        }
-        
-        .nav-card.warning .nav-icon {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-        }
-        
-        .nav-card.warning:hover {
-            background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(224, 168, 0, 0.05) 100%);
-        }
-        
-        /* Animations d'entrée */
-        .nav-card {
-            animation: slideInUp 0.6s ease forwards;
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        
-        .nav-card:nth-child(1) { animation-delay: 0.1s; }
-        .nav-card:nth-child(2) { animation-delay: 0.2s; }
-        .nav-card:nth-child(3) { animation-delay: 0.3s; }
-        
-        @keyframes slideInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .nav-card {
-                padding: 1.2rem;
-            }
-            
-            .nav-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
-            }
-            
-            .navigation-section {
-                padding: 1.5rem;
-                margin-top: 2rem;
-            }
-        }
-        
-        /* Effet de pulsation pour les boutons importants */
-        .nav-card.primary {
-            animation: slideInUp 0.6s ease forwards, pulse 2s infinite 1s;
-        }
-        
-        @keyframes pulse {
-            0%, 100% {
-                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            }
-            50% {
-                box-shadow: 0 4px 25px rgba(102, 126, 234, 0.3);
-            }
-        }
+        .quick-nav .btn { border-radius: 10px; font-size: 0.82rem; padding: 0.6rem 1.2rem; }
+
+        .empty-chat { text-align: center; padding: 3rem; color: var(--text-muted); }
+        .empty-chat i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <!-- Header -->
-        <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <i class="fas fa-crown" style="color: #ffd700; margin-right: 8px;"></i>
-                    <strong>Conversation avec {{ other_user }}</strong>
-                </div>
-                <a href="{{ url_for('messages') }}" style="color: #666; text-decoration: none;">
-                    <i class="fas fa-arrow-left"></i> Retour aux messages
-                </a>
+    <nav class="navbar">
+        <div class="navbar-brand"><i class="fas fa-brain"></i> Formation IA</div>
+        <div class="navbar-nav">
+            <div class="navbar-user">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ session.username }}</span>
+                <span class="badge badge-admin"><i class="fas fa-crown"></i> Admin</span>
             </div>
+            <a href="{{ url_for('messages') }}" class="navbar-link"><i class="fas fa-comments"></i> Messages</a>
+            <a href="{{ url_for('dashboard') }}" class="navbar-link"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="{{ url_for('index') }}" class="navbar-link"><i class="fas fa-home"></i> Accueil</a>
+            <a href="{{ url_for('logout') }}" class="navbar-link"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="chat-header animate-fade-in">
+            <div class="chat-header-left">
+                <div class="chat-header-avatar">{{ other_user[0]|upper }}</div>
+                <div class="chat-header-info">
+                    <h2>{{ other_user }}</h2>
+                    <p>Conversation</p>
+                </div>
+            </div>
+            <a href="{{ url_for('messages') }}" class="back-link"><i class="fas fa-arrow-left"></i> Retour</a>
         </div>
 
-        <!-- Zone des messages -->
         <div class="messages-area" id="messagesArea">
             {% for message in messages %}
             <div class="message {% if message.from_user == session.username %}sent{% else %}received{% endif %}">
                 <div class="message-header">
-                    <strong>{{ message.from_user }}</strong> - {{ message.created_at.strftime('%d/%m/%Y à %H:%M') }}
+                    <strong>{{ message.from_user }}</strong> — {{ message.created_at.strftime('%d/%m/%Y %H:%M') }}
                 </div>
                 <div>{{ message.message }}</div>
             </div>
             {% endfor %}
-            
+
             {% if not messages %}
-            <div style="text-align: center; color: #666; padding: 50px;">
-                <i class="fas fa-comment-dots" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <p>Aucun message dans cette conversation.<br>Commencez à discuter avec {{ other_user }} !</p>
+            <div class="empty-chat">
+                <i class="fas fa-comment-dots"></i>
+                <p>Aucun message. Commencez à discuter avec {{ other_user }} !</p>
             </div>
             {% endif %}
         </div>
 
-        <!-- Zone de saisie -->
         <div class="message-input">
-            <input type="text" id="messageInput" placeholder="Répondre à {{ other_user }}..." maxlength="500">
-            <button class="send-btn" onclick="sendMessage()">
+            <input type="text" id="messageInput" placeholder="Répondre à {{ other_user }}..." maxlength="500" autocomplete="off">
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
 
-        <!-- Navigation Moderne -->
-        <div class="navigation-section">
-            <div class="nav-header">
-                <i class="fas fa-compass"></i>
-                <h3>Navigation</h3>
-            </div>
-            <div class="nav-grid">
-                <a href="{{ url_for('messages') }}" class="nav-card primary">
-                    <div class="nav-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <div class="nav-content">
-                        <h4>Tous les Messages</h4>
-                        <p>Centre de messagerie</p>
-                    </div>
-                    <div class="nav-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-                
-                <a href="{{ url_for('dashboard') }}" class="nav-card secondary">
-                    <div class="nav-icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <div class="nav-content">
-                        <h4>Dashboard</h4>
-                        <p>Statistiques admin</p>
-                    </div>
-                    <div class="nav-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-                
-                <a href="{{ url_for('admin_users') }}" class="nav-card info">
-                    <div class="nav-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="nav-content">
-                        <h4>Utilisateurs</h4>
-                        <p>Gestion des comptes</p>
-                    </div>
-                    <div class="nav-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-            </div>
+        <div class="quick-nav">
+            <a href="{{ url_for('messages') }}" class="btn btn-primary"><i class="fas fa-comments"></i> Messages</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary"><i class="fas fa-chart-bar"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-secondary"><i class="fas fa-users"></i> Utilisateurs</a>
         </div>
     </div>
 
+    <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+    <script src="/static/js/theme-toggle.js"></script>
     <script>
         let lastMessageId = null;
-        let isScrolledToBottom = true;
-        
-        // Scroll vers le bas automatiquement
         const messagesArea = document.getElementById('messagesArea');
         messagesArea.scrollTop = messagesArea.scrollHeight;
-        
-        messagesArea.addEventListener('scroll', function() {
-            isScrolledToBottom = messagesArea.scrollTop + messagesArea.clientHeight >= messagesArea.scrollHeight - 10;
-        });
 
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+            if (e.key === 'Enter') sendMessage();
         });
 
         async function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
-            
             if (!message) return;
 
-            const sendBtn = document.querySelector('.send-btn');
-            sendBtn.disabled = true;
-            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
             try {
                 const response = await fetch('/send_message', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: message,
-                        to_user: '{{ other_user }}'
-                    })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: message, to_user: '{{ other_user }}' })
                 });
-
                 const result = await response.json();
-                
-                if (result.success) {
-                    input.value = '';
-                    await loadNewMessages();
-                } else {
-                    alert('Erreur: ' + result.error);
-                }
-            } catch (error) {
-                alert('Erreur de connexion: ' + error.message);
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-            }
+                if (result.success) { input.value = ''; await loadNewMessages(); }
+            } catch (error) { console.error('Erreur:', error); }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i>'; }
         }
 
         async function loadNewMessages() {
             try {
                 const response = await fetch(`/api/get_messages?username={{ other_user }}`);
                 const data = await response.json();
-                
                 if (data.messages && data.messages.length > 0) {
-                    const newLastMessageId = data.messages[data.messages.length - 1]._id;
-                    
-                    if (lastMessageId !== newLastMessageId) {
-                        updateMessagesDisplay(data.messages);
-                        lastMessageId = newLastMessageId;
-                        
-                        if (isScrolledToBottom) {
-                            messagesArea.scrollTop = messagesArea.scrollHeight;
-                        }
-                    }
+                    updateMessagesDisplay(data.messages);
+                    messagesArea.scrollTop = messagesArea.scrollHeight;
                 }
-            } catch (error) {
-                console.log('Erreur lors du chargement des messages');
-            }
+            } catch (error) { console.log('Erreur chargement'); }
         }
 
         function updateMessagesDisplay(messages) {
-            const messagesHtml = messages.map(message => {
-                const messageClass = message.from_user === '{{ session.username }}' ? 'sent' : 'received';
-                const date = new Date(message.created_at).toLocaleString('fr-FR');
-                
-                return `
-                    <div class="message ${messageClass}">
-                        <div class="message-header">
-                            <strong>${message.from_user}</strong> - ${date}
-                        </div>
-                        <div>${message.message}</div>
-                    </div>
-                `;
+            const html = messages.map(m => {
+                const cls = m.from_user === '{{ session.username }}' ? 'sent' : 'received';
+                const date = new Date(m.created_at).toLocaleString('fr-FR');
+                return `<div class="message ${cls}"><div class="message-header"><strong>${m.from_user}</strong> — ${date}</div><div>${m.message}</div></div>`;
             }).join('');
-            
-            if (messages.length === 0) {
-                messagesArea.innerHTML = `
-                    <div style="text-align: center; color: #666; padding: 50px;">
-                        <i class="fas fa-comment-dots" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                        <p>Aucun message dans cette conversation.<br>Commencez à discuter avec {{ other_user }} !</p>
-                    </div>
-                `;
-            } else {
-                messagesArea.innerHTML = messagesHtml;
-            }
-        }
-
-        const lastMessage = document.querySelector('.message:last-child');
-        if (lastMessage) {
-            lastMessageId = '{{ messages[-1]._id if messages else "" }}';
+            messagesArea.innerHTML = html || '<div class="empty-chat"><i class="fas fa-comment-dots"></i><p>Aucun message</p></div>';
         }
 
         setInterval(loadNewMessages, 2000);
     </script>
 </body>
 </html>
-
-
-
-

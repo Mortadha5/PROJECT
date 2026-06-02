@@ -4,289 +4,222 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier mon profil</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header {
+        body { font-size: 14px; }
+        .container { max-width: 600px; }
+
+        .page-header {
             text-align: center;
-            margin-bottom: 2rem;
-            color: #333;
-        }
-        
-        .form-group {
             margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
         }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #333;
+        .page-header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
+        .page-header p { color: var(--text-secondary); font-size: 0.85rem; }
+
+        .form-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
         }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        textarea.form-control {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            margin: 0.5rem;
-            border: none;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .alert {
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-        }
-        
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
+
         .avatar-section {
             text-align: center;
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: #f8f9fa;
-            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: var(--bg-primary);
+            border-radius: 12px;
         }
-        
         .current-avatar {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 80px; height: 80px;
+            background: var(--primary-gradient);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            color: white;
-            font-size: 2rem;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 0.75rem;
+            color: white; font-size: 1.8rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
         }
+        .current-avatar:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
+        .current-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .avatar-section p { font-size: 0.78rem; color: var(--text-muted); }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label {
+            display: flex; align-items: center; gap: 0.4rem;
+            margin-bottom: 0.4rem;
+            font-weight: 600; font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.65rem 0.9rem;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+        }
+        .form-control:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .alert-success { background: #d3f9d8; color: #2b8a3e; border: 1px solid #b2f2bb; }
+        .alert-error { background: #ffe3e3; color: #c92a2a; border: 1px solid #ffc9c9; }
+
+        .form-actions {
+            display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem;
+        }
+        .form-actions .btn { border-radius: 10px; font-size: 0.82rem; padding: 0.6rem 1.2rem; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+            z-index: 9999; align-items: center; justify-content: center; padding: 2rem;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-secondary); border-radius: 16px;
+            padding: 1.5rem; max-width: 380px; width: 100%;
+            box-shadow: var(--shadow-xl); text-align: center;
+        }
+        .modal h3 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-primary); }
+        .modal-btns { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+        .modal-btns .btn { justify-content: center; }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-brand"><i class="fas fa-brain"></i> Formation IA</div>
+        <div class="navbar-nav">
+            <div class="navbar-user">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ session.username }}</span>
+            </div>
+            <a href="{{ url_for('mon_profil') }}" class="navbar-link"><i class="fas fa-user"></i> Profil</a>
+            <a href="{{ url_for('index') }}" class="navbar-link"><i class="fas fa-home"></i> Accueil</a>
+            <a href="{{ url_for('logout') }}" class="navbar-link"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+        </div>
+    </nav>
+
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-user-edit"></i> Modifier mon profil</h1>
+        <div class="page-header animate-fade-in">
+            <div style="margin-bottom: 0.5rem;"><span style="font-size: 1.8rem;">✏️</span></div>
+            <h1>Modifier mon profil</h1>
             <p>Personnalisez vos informations</p>
         </div>
 
         {% if error %}
-            <div class="alert alert-error">
-                <i class="fas fa-exclamation-triangle"></i> {{ error }}
-            </div>
+        <div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> {{ error }}</div>
         {% endif %}
-
         {% if success %}
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> {{ success }}
-            </div>
+        <div class="alert alert-success"><i class="fas fa-check-circle"></i> {{ success }}</div>
         {% endif %}
 
-        <div class="avatar-section">
-            <div class="current-avatar" onclick="openAvatarModal()">
-                {% if user.avatar_type == 'file' and user.avatar_file %}
-                    <img src="/static/uploads/avatars/{{ user.avatar_file }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                {% elif user.avatar %}
-                    <i class="{{ user.avatar }}"></i>
-                {% else %}
-                    <i class="fas fa-user"></i>
-                {% endif %}
-            </div>
-            <p>Avatar actuel (cliquez pour changer)</p>
-        </div>
-
-        <!-- Modal pour changer l'avatar -->
-        <div id="avatarModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-            <div style="background-color: white; margin: 15% auto; padding: 20px; border-radius: 15px; width: 400px; text-align: center;">
-                <h3><i class="fas fa-camera"></i> Changer l'avatar</h3>
-                
-                <div style="margin: 20px 0;">
-                    <input type="file" id="avatarFile" accept="image/*" style="display: none;">
-                    <button onclick="document.getElementById('avatarFile').click()" class="btn btn-primary" style="margin: 10px;">
-                        <i class="fas fa-upload"></i> Uploader une photo
-                    </button>
-                    <button onclick="changeRandomAvatar()" class="btn btn-secondary" style="margin: 10px;">
-                        <i class="fas fa-random"></i> Avatar aléatoire
-                    </button>
+        <div class="form-card animate-fade-in">
+            <div class="avatar-section">
+                <div class="current-avatar" onclick="document.getElementById('avatarModal').classList.add('active')">
+                    {% if user.avatar_type == 'file' and user.avatar_file %}
+                        <img src="/static/uploads/avatars/{{ user.avatar_file }}" alt="Avatar">
+                    {% elif user.avatar %}
+                        <i class="{{ user.avatar }}"></i>
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
                 </div>
-                
-                <div style="margin-top: 20px;">
-                    <button onclick="closeAvatarModal()" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Annuler
-                    </button>
+                <p>Cliquez pour changer l'avatar</p>
+            </div>
+
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-user"></i> Nom d'utilisateur</label>
+                    <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
                 </div>
-            </div>
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-envelope"></i> Email (optionnel)</label>
+                    <input type="email" name="email" class="form-control" value="{{ user.email or '' }}" placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-quote-left"></i> Biographie (optionnel)</label>
+                    <textarea name="bio" class="form-control" placeholder="Parlez-nous de vous...">{{ user.bio or '' }}</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Sauvegarder</button>
+                    <a href="{{ url_for('mon_profil') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Annuler</a>
+                </div>
+            </form>
         </div>
-
-        <form method="POST">
-            <div class="form-group">
-                <label class="form-label" for="username">
-                    <i class="fas fa-user"></i> Nom d'utilisateur
-                </label>
-                <input type="text" id="username" name="username" class="form-control" 
-                       value="{{ user.username }}" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="email">
-                    <i class="fas fa-envelope"></i> Email (optionnel)
-                </label>
-                <input type="email" id="email" name="email" class="form-control" 
-                       value="{{ user.email or '' }}" placeholder="votre@email.com">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="bio">
-                    <i class="fas fa-quote-left"></i> Biographie (optionnel)
-                </label>
-                <textarea id="bio" name="bio" class="form-control" 
-                          placeholder="Parlez-nous de vous...">{{ user.bio or '' }}</textarea>
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Sauvegarder
-                </button>
-                <a href="{{ url_for('mon_profil') }}" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Annuler
-                </a>
-            </div>
-        </form>
     </div>
 
+    <!-- Avatar Modal -->
+    <div class="modal-overlay" id="avatarModal">
+        <div class="modal">
+            <h3><i class="fas fa-camera"></i> Changer l'avatar</h3>
+            <input type="file" id="avatarFile" accept="image/*" style="display: none;">
+            <div class="modal-btns">
+                <button onclick="document.getElementById('avatarFile').click()" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Uploader une photo
+                </button>
+                <button onclick="changeRandomAvatar()" class="btn btn-secondary">
+                    <i class="fas fa-random"></i> Avatar aléatoire
+                </button>
+            </div>
+            <button onclick="document.getElementById('avatarModal').classList.remove('active')" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Annuler
+            </button>
+        </div>
+    </div>
+
+    <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+    <script src="/static/js/theme-toggle.js"></script>
     <script>
-    function openAvatarModal() {
-        document.getElementById('avatarModal').style.display = 'block';
-    }
+        document.getElementById('avatarModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
 
-    function closeAvatarModal() {
-        document.getElementById('avatarModal').style.display = 'none';
-    }
-
-    // Upload de fichier
-    document.getElementById('avatarFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
+        document.getElementById('avatarFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
             const formData = new FormData();
             formData.append('avatar', file);
-            
+            fetch('/api/upload_avatar', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => { if (data.success) location.reload(); else alert('Erreur: ' + data.error); })
+            .catch(() => alert('Erreur réseau'));
+        });
+
+        function changeRandomAvatar() {
             fetch('/api/upload_avatar', {
                 method: 'POST',
-                body: formData
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: 'random'})
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert('Erreur: ' + data.error);
-                }
-            })
-            .catch(error => {
-                alert('Erreur de connexion');
-            });
-            
-            closeAvatarModal();
+            .then(r => r.json())
+            .then(data => { if (data.success) location.reload(); else alert('Erreur: ' + data.error); })
+            .catch(() => alert('Erreur réseau'));
         }
-    });
-
-    function changeRandomAvatar() {
-        fetch('/api/upload_avatar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload();
-            } else {
-                alert('Erreur: ' + data.error);
-            }
-        })
-        .catch(error => {
-            alert('Erreur de connexion');
-        });
-        
-        closeAvatarModal();
-    }
-
-    window.onclick = function(event) {
-        const modal = document.getElementById('avatarModal');
-        if (event.target == modal) {
-            closeAvatarModal();
-        }
-    }
     </script>
 </body>
 </html>
-

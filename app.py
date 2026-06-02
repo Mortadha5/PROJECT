@@ -149,7 +149,7 @@ def get_confidence_level(score):
 
 # Créer l'application Flask
 app = Flask(__name__)
-app.secret_key = "votre_cle_secrete_plus_complexe_123!"
+app.secret_key = os.environ.get("SECRET_KEY", "votre_cle_secrete_plus_complexe_123!")
 
 # Initialiser CSRF Protection
 # csrf = CSRFProtect(app)  # Commenté temporairement
@@ -163,7 +163,7 @@ app.config.update(
 )
 
 # Connexion MongoDB
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient(os.environ.get("MONGO_URI", "mongodb://localhost:27017/"))
 db = client["formation_db"]
 collection = db["employes"]
 
@@ -205,6 +205,10 @@ def admin_required(f):
         return f(*args, **kwargs)
     return wrapper
 
+@app.errorhandler(404)
+def not_found_error(error):
+    return "", 404
+
 @app.errorhandler(500)
 def internal_error(error):
     print(f"ERREUR 500: {error}")
@@ -213,6 +217,9 @@ def internal_error(error):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    from werkzeug.exceptions import HTTPException
+    if isinstance(e, HTTPException):
+        return e
     print(f"EXCEPTION NON GÉRÉE: {e}")
     print(f"TRACEBACK: {traceback.format_exc()}")
     return f"<h1>Erreur</h1><pre>{traceback.format_exc()}</pre>", 500
@@ -1732,4 +1739,4 @@ def biometric_setup():
     return render_template("biometric_setup.html")
 
 if __name__ == "__main__":
-    app.run(debug=True, host="localhost", port=5555)  # Changer False en True
+    app.run(debug=True, host="0.0.0.0", port=5555)

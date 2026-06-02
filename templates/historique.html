@@ -1,294 +1,282 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Historique</title>
-  <link rel="stylesheet" href="/static/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      margin: 0;
-      padding: 20px;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    
-    th {
-      background-color: #f8f9fa;
-      font-weight: 600;
-      color: #333;
-    }
-    
-    tr:hover {
-      background-color: #f5f5f5;
-    }
-    
-    .btn {
-      display: inline-block;
-      padding: 10px 20px;
-      margin: 5px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-    
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique des Prédictions</title>
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-size: 14px; }
+        .container { max-width: 1400px; }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+        .page-header h1 {
+            font-size: 1.5rem; font-weight: 700; margin-bottom: 0.3rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .page-header p { color: var(--text-secondary); font-size: 0.85rem; }
+
+        /* Filters */
+        .filter-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+        .filter-card h3 {
+            font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem;
+            color: var(--text-primary);
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .filter-row {
+            display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;
+        }
+        .filter-group { flex: 1; min-width: 180px; }
+        .filter-group label {
+            display: block; font-size: 0.75rem; font-weight: 600;
+            color: var(--text-secondary); margin-bottom: 0.3rem;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .filter-group select {
+            width: 100%; padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-color); border-radius: 8px;
+            font-size: 0.82rem; background: var(--bg-secondary); color: var(--text-primary);
+        }
+        .filter-group select:focus { outline: none; border-color: #667eea; }
+        .filter-reset {
+            padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.78rem;
+            background: var(--bg-primary); color: var(--text-secondary);
+            text-decoration: none; border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+        }
+        .filter-reset:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+        .filter-info {
+            margin-top: 0.75rem; padding: 0.5rem 0.75rem;
+            background: var(--bg-primary); border-radius: 8px;
+            font-size: 0.78rem; color: var(--text-secondary);
+        }
+
+        /* Table */
+        .table-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .pred-table { width: 100%; border-collapse: collapse; }
+        .pred-table th {
+            background: var(--bg-primary); padding: 0.65rem 0.9rem;
+            text-align: left; font-weight: 600; font-size: 0.72rem;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--text-secondary); border-bottom: 1px solid var(--border-color);
+        }
+        .pred-table td {
+            padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--border-color);
+            font-size: 0.82rem; color: var(--text-primary);
+        }
+        .pred-table tr:hover { background: var(--bg-primary); }
+
+        .type-badge {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            padding: 0.2rem 0.6rem; border-radius: 50px;
+            font-size: 0.68rem; font-weight: 600;
+        }
+        .type-badge.advanced { background: rgba(56,217,169,0.1); color: #38d9a9; }
+        .type-badge.simple { background: var(--bg-primary); color: var(--text-secondary); }
+
+        .formation-pill {
+            background: var(--primary-gradient); color: white;
+            padding: 0.2rem 0.6rem; border-radius: 8px;
+            font-size: 0.75rem; font-weight: 500;
+        }
+
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5; display: block; }
+
+        .quick-nav {
+            display: flex; gap: 0.75rem; justify-content: center;
+            margin-top: 1.5rem; flex-wrap: wrap;
+        }
+        .quick-nav .btn { border-radius: 10px; font-size: 0.82rem; padding: 0.6rem 1.2rem; }
+        .quick-nav button { border: none; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .filter-row { flex-direction: column; }
+            .pred-table { font-size: 0.78rem; }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Message admin -->
-    <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center;">
-        <i class="fas fa-crown" style="color: #ffd700; margin-right: 8px;"></i>
-        <strong>Espace Administrateur</strong> - Historique des prédictions
-    </div>
+    <nav class="navbar">
+        <div class="navbar-brand"><i class="fas fa-brain"></i> Formation IA</div>
+        <div class="navbar-nav">
+            <div class="navbar-user">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ session.username }}</span>
+                <span class="badge badge-admin"><i class="fas fa-crown"></i> Admin</span>
+            </div>
+            <a href="{{ url_for('dashboard') }}" class="navbar-link"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="navbar-link"><i class="fas fa-users-cog"></i> Utilisateurs</a>
+            <a href="{{ url_for('index') }}" class="navbar-link"><i class="fas fa-home"></i> Accueil</a>
+            <a href="{{ url_for('logout') }}" class="navbar-link"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+        </div>
+    </nav>
 
-    <!-- Filtres -->
-    <div style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <h3 style="margin-bottom: 15px; color: #333;">
-            <i class="fas fa-filter"></i> Filtres
-        </h3>
-        
-        <form method="GET" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: end;">
-            <!-- Filtre par type -->
-            <div style="flex: 1; min-width: 200px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">
-                    <i class="fas fa-magic"></i> Type de prédiction
-                </label>
-                <select name="type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
-                    <option value="all" {% if current_type == 'all' %}selected{% endif %}>Tous les types</option>
-                    <option value="simple" {% if current_type == 'simple' %}selected{% endif %}>Prédictions simples</option>
-                    <option value="advanced" {% if current_type == 'advanced' %}selected{% endif %}>Prédictions avancées</option>
-                </select>
-            </div>
-            
-            <!-- Filtre par utilisateur -->
-            <div style="flex: 1; min-width: 200px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">
-                    <i class="fas fa-user"></i> Utilisateur
-                </label>
-                <select name="user" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
-                    <option value="all" {% if current_user == 'all' %}selected{% endif %}>Tous les utilisateurs</option>
-                    {% for user in users %}
-                        <option value="{{ user }}" {% if current_user == user %}selected{% endif %}>{{ user }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <!-- Boutons -->
-            <div style="display: flex; gap: 10px;">
-                <a href="{{ url_for('historique') }}" style="padding: 8px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px;">
-                    <i class="fas fa-times"></i> Reset
-                </a>
-            </div>
-        </form>
-        
-        <!-- Statistiques des filtres -->
-        <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 0.9rem;">
-            <strong>Résultats :</strong> {{ data|length }} prédiction(s) trouvée(s)
-            {% if current_type != 'all' or current_user != 'all' %}
-                <span style="color: #666;">
-                    (filtré{% if current_type != 'all' %} par type: {{ current_type }}{% endif %}{% if current_user != 'all' %} par utilisateur: {{ current_user }}{% endif %})
-                </span>
-            {% endif %}
+    <div class="container">
+        <div class="page-header animate-fade-in">
+            <div style="margin-bottom: 0.5rem;"><span style="font-size: 1.8rem;">📊</span></div>
+            <h1>Historique des Prédictions</h1>
+            <p>Toutes les prédictions de formation réalisées</p>
         </div>
-    </div>
 
-    <!-- Statistiques rapides -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
-            <div style="font-size: 1.5rem; font-weight: bold;">{{ data|length }}</div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Total affiché</div>
-        </div>
-        
-        <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
-            <div style="font-size: 1.5rem; font-weight: bold;">
-                {{ data | selectattr('prediction_type', 'equalto', 'advanced') | list | length }}
+        <!-- Stats -->
+        <div class="stats-grid animate-fade-in">
+            <div class="stat-card">
+                <div class="stat-number">{{ data|length }}</div>
+                <div class="stat-label"><i class="fas fa-list"></i> Total affiché</div>
             </div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Prédictions avancées</div>
-        </div>
-        
-        <div style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
-            <div style="font-size: 1.5rem; font-weight: bold;">
-                {{ data | rejectattr('prediction_type', 'equalto', 'advanced') | list | length }}
+            <div class="stat-card">
+                <div class="stat-number">{{ data | selectattr('prediction_type', 'equalto', 'advanced') | list | length }}</div>
+                <div class="stat-label"><i class="fas fa-magic"></i> Avancées</div>
             </div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Prédictions simples</div>
+            <div class="stat-card">
+                <div class="stat-number">{{ data | rejectattr('prediction_type', 'equalto', 'advanced') | list | length }}</div>
+                <div class="stat-label"><i class="fas fa-robot"></i> Simples</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ users|length }}</div>
+                <div class="stat-label"><i class="fas fa-users"></i> Utilisateurs actifs</div>
+            </div>
         </div>
-        
-        <div style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
-            <div style="font-size: 1.5rem; font-weight: bold;">{{ users|length }}</div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Utilisateurs actifs</div>
-        </div>
-    </div>
 
-    <h2>📊 Historique des Prédictions</h2>
-    
-    {% if data %}
-      <p>Total des prédictions : <strong>{{ data|length }}</strong></p>
-      <table class="predictions-table">
-        <tr>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Âge</th>
-          <th>Expérience</th>
-          <th>Compétence</th>
-          <th>Formation</th>
-          <th>Type</th>
-          <th>Créé par</th>
-          <th>Date</th>
-        </tr>
-        {% for row in data %}
-        <tr>
-          <td>{{ row.nom }}</td>
-          <td>{{ row.prenom }}</td>
-          <td>{{ row.age }}</td>
-          <td>{{ row.experience }}</td>
-          <td>{{ row.competence }}</td>
-          <td>
-            {% if row.prediction_type == 'advanced' %}
-              <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem;">
-                {{ row.formation_suggeree }}
-              </span>
-              {% if row.confidence_score %}
-                <br><small style="color: #666;">Confiance: {{ row.confidence_score }}%</small>
-              {% endif %}
-            {% else %}
-              {{ row.formation_suggeree }}
-            {% endif %}
-          </td>
-          <td>
-            {% if row.prediction_type == 'advanced' %}
-              <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.7rem;">
-                <i class="fas fa-magic"></i> Avancée
-              </span>
-            {% else %}
-              <span style="background: #6c757d; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.7rem;">
-                <i class="fas fa-robot"></i> Simple
-              </span>
-            {% endif %}
-          </td>
-          <td>{{ row.created_by or 'N/A' }}</td>
-          <td>
-            {% if row.created_at %}
-              {{ row.created_at.strftime('%d/%m/%Y à %H:%M') }}
-            {% else %}
-              N/A
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <div style="text-align: center; padding: 40px; color: #666;">
-        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 20px;"></i>
-        <h3>Aucune prédiction trouvée</h3>
-        <p>Il n'y a pas encore de prédictions dans la base de données.</p>
-      </div>
-    {% endif %}
-    
-    <div style="text-align: center; margin-top: 20px;">
-        <a href="{{ url_for('index') }}" class="btn">⬅ Retour</a>
-        <a href="{{ url_for('dashboard') }}" class="btn">📊 Dashboard</a>
-        <a href="{{ url_for('admin_users') }}" class="btn">👥 Utilisateurs</a>
-        
+        <!-- Filters -->
+        <div class="filter-card animate-fade-in">
+            <h3><i class="fas fa-filter"></i> Filtres</h3>
+            <form method="GET">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label><i class="fas fa-magic"></i> Type</label>
+                        <select name="type" onchange="this.form.submit()">
+                            <option value="all" {% if current_type == 'all' %}selected{% endif %}>Tous</option>
+                            <option value="simple" {% if current_type == 'simple' %}selected{% endif %}>Simple</option>
+                            <option value="advanced" {% if current_type == 'advanced' %}selected{% endif %}>Avancée</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fas fa-user"></i> Utilisateur</label>
+                        <select name="user" onchange="this.form.submit()">
+                            <option value="all" {% if current_user == 'all' %}selected{% endif %}>Tous</option>
+                            {% for user in users %}
+                            <option value="{{ user }}" {% if current_user == user %}selected{% endif %}>{{ user }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <a href="{{ url_for('historique') }}" class="filter-reset"><i class="fas fa-times"></i> Reset</a>
+                </div>
+            </form>
+            <div class="filter-info">
+                <strong>{{ data|length }}</strong> résultat(s)
+                {% if current_type != 'all' or current_user != 'all' %}
+                    — filtré{% if current_type != 'all' %} par {{ current_type }}{% endif %}{% if current_user != 'all' %} par {{ current_user }}{% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Table -->
         {% if data %}
-            <button onclick="exportToCSV()" class="btn" style="background: #28a745;">
+        <div class="table-card animate-fade-in">
+            <table class="pred-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Âge</th>
+                        <th>Exp.</th>
+                        <th>Compétence</th>
+                        <th>Formation</th>
+                        <th>Type</th>
+                        <th>Par</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        <td>{{ row.nom }}</td>
+                        <td>{{ row.prenom }}</td>
+                        <td>{{ row.age }}</td>
+                        <td>{{ row.experience }}</td>
+                        <td>{{ row.competence }}</td>
+                        <td>
+                            <span class="formation-pill">{{ row.formation_suggeree }}</span>
+                            {% if row.confidence_score %}
+                            <br><small style="color: var(--text-muted); font-size: 0.7rem;">{{ row.confidence_score }}%</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.prediction_type == 'advanced' %}
+                                <span class="type-badge advanced"><i class="fas fa-magic"></i> Avancée</span>
+                            {% else %}
+                                <span class="type-badge simple"><i class="fas fa-robot"></i> Simple</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.created_by or '—' }}</td>
+                        <td>{% if row.created_at %}{{ row.created_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state animate-fade-in">
+            <i class="fas fa-inbox"></i>
+            <h3>Aucune prédiction trouvée</h3>
+            <p>Il n'y a pas encore de prédictions dans la base de données.</p>
+        </div>
+        {% endif %}
+
+        <div class="quick-nav animate-fade-in">
+            <a href="{{ url_for('index') }}" class="btn btn-primary"><i class="fas fa-home"></i> Accueil</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-secondary"><i class="fas fa-users"></i> Utilisateurs</a>
+            {% if data %}
+            <button class="btn btn-secondary" onclick="exportToCSV()" style="background: rgba(56,217,169,0.1); color: #38d9a9; border: 1px solid rgba(56,217,169,0.3);">
                 <i class="fas fa-download"></i> Exporter CSV
             </button>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
-  </div>
-  <script>
-    // Auto-submit du formulaire quand on change les filtres
-    document.querySelectorAll('select[name="type"], select[name="user"]').forEach(select => {
-        select.addEventListener('change', function() {
-            this.form.submit();
-        });
-    });
-    
-    // Animation des statistiques
-    document.addEventListener('DOMContentLoaded', function() {
-        const stats = document.querySelectorAll('[style*="grid-template-columns"] > div');
-        stats.forEach((stat, index) => {
-            stat.style.opacity = '0';
-            stat.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                stat.style.transition = 'all 0.5s ease';
-                stat.style.opacity = '1';
-                stat.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
-    });
-    
-    // Highlight des lignes filtrées
-    {% if current_type == 'advanced' %}
-        document.querySelectorAll('tr').forEach(row => {
-            const typeCell = row.querySelector('td:nth-child(7)');
-            if (typeCell && typeCell.textContent.includes('Avancée')) {
-                row.style.background = 'rgba(40, 167, 69, 0.1)';
-            }
-        });
-    {% elif current_type == 'simple' %}
-        document.querySelectorAll('tr').forEach(row => {
-            const typeCell = row.querySelector('td:nth-child(7)');
-            if (typeCell && typeCell.textContent.includes('Simple')) {
-                row.style.background = 'rgba(108, 117, 125, 0.1)';
-            }
-        });
-    {% endif %}
-  </script>
-  <script>
-    function exportToCSV() {
-        const table = document.querySelector('.predictions-table');
-        let csv = [];
-        
-        // En-têtes
-        const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim());
-        csv.push(headers.join(','));
-        
-        // Données
-        const rows = table.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            const cells = Array.from(row.querySelectorAll('td')).map(td => {
-                return '"' + td.textContent.trim().replace(/"/g, '""') + '"';
+
+    <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+    <script src="/static/js/theme-toggle.js"></script>
+    <script>
+        function exportToCSV() {
+            const table = document.querySelector('.pred-table');
+            let csv = [];
+            const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim());
+            csv.push(headers.join(','));
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const cells = Array.from(row.querySelectorAll('td')).map(td => '"' + td.textContent.trim().replace(/"/g, '""') + '"');
+                csv.push(cells.join(','));
             });
-            csv.push(cells.join(','));
-        });
-        
-        // Téléchargement
-        const csvContent = csv.join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `historique_predictions_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-    }
-  </script>
+            const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `historique_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+    </script>
 </body>
 </html>

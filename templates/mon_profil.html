@@ -4,321 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Profil</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        body { font-size: 14px; }
+        .container { max-width: 900px; }
+
+        .profile-banner {
+            background: var(--primary-gradient);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            color: white;
+            margin-bottom: 1.5rem;
+            position: relative;
             overflow: hidden;
         }
-        
-        .profile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-            position: relative;
-        }
-        
-        .profile-header::before {
+        .profile-banner::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            opacity: 0.3;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
         }
-        
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            background: rgba(255, 255, 255, 0.2);
+        .profile-avatar-wrapper {
+            width: 90px; height: 90px;
+            background: rgba(255,255,255,0.2);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 3rem;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            position: relative;
-            z-index: 1;
-            transition: transform 0.3s ease;
-        }
-        
-        .profile-avatar:hover {
-            transform: scale(1.05);
-        }
-        
-        .profile-name {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .role-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1.5rem;
-            border-radius: 25px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .role-admin {
-            background: rgba(255, 193, 7, 0.2);
-            color: #fff3cd;
-            border: 2px solid rgba(255, 193, 7, 0.3);
-        }
-        
-        .role-user {
-            background: rgba(40, 167, 69, 0.2);
-            color: #d4edda;
-            border: 2px solid rgba(40, 167, 69, 0.3);
-        }
-        
-        .profile-content {
-            padding: 2rem;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 1.5rem;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid #e0e0e0;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1rem;
-            color: white;
-            font-size: 1.5rem;
+            font-size: 2.2rem;
+            border: 3px solid rgba(255,255,255,0.3);
+            position: relative; z-index: 1;
+            cursor: pointer;
+            transition: var(--transition-fast);
         }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 0.5rem;
+        .profile-avatar-wrapper:hover { transform: scale(1.05); }
+        .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .profile-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.4rem; position: relative; z-index: 1; }
+        .profile-role {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.3rem 1rem; border-radius: 50px;
+            font-size: 0.78rem; font-weight: 600;
+            position: relative; z-index: 1;
         }
-        
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .info-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #333;
+        .profile-role.admin { background: rgba(255,215,0,0.2); border: 1px solid rgba(255,215,0,0.3); }
+        .profile-role.user { background: rgba(56,217,169,0.2); border: 1px solid rgba(56,217,169,0.3); }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
             margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
-        
+        .profile-stat {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.1rem;
+            text-align: center;
+            transition: var(--transition-normal);
+        }
+        .profile-stat:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .profile-stat-icon {
+            width: 40px; height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 0.6rem;
+            color: white; font-size: 1rem;
+        }
+        .profile-stat-value { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem; }
+        .profile-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+
+        .info-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .info-section h3 {
+            font-size: 1rem; font-weight: 600; margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
         }
-        
         .info-item {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .info-label {
-            font-size: 0.85rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .info-value {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .actions-section {
-            text-align: center;
-            padding: 2rem;
-            background: #f8f9fa;
-            border-radius: 15px;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            margin: 0.5rem;
-            border: none;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-        
-        .btn-info {
-            background: #17a2b8;
-            color: white;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .activity-timeline {
-            position: relative;
-            padding-left: 2rem;
-        }
-        
-        .activity-timeline::before {
-            content: '';
-            position: absolute;
-            left: 1rem;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, #667eea, #764ba2);
-        }
-        
-        .activity-item {
-            position: relative;
-            background: white;
+            background: var(--bg-primary);
             padding: 1rem;
             border-radius: 10px;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 3px solid #667eea;
         }
-        
+        .info-item-label {
+            font-size: 0.7rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            font-weight: 600; margin-bottom: 0.3rem;
+            display: flex; align-items: center; gap: 0.3rem;
+        }
+        .info-item-value { font-size: 0.9rem; font-weight: 500; color: var(--text-primary); }
+
+        /* Activity timeline */
+        .activity-timeline { position: relative; padding-left: 1.5rem; }
+        .activity-timeline::before {
+            content: '';
+            position: absolute; left: 0.5rem; top: 0; bottom: 0;
+            width: 2px; background: var(--primary-gradient);
+        }
+        .activity-item {
+            position: relative;
+            background: var(--bg-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.6rem;
+        }
         .activity-item::before {
             content: '';
-            position: absolute;
-            left: -1.75rem;
-            top: 1rem;
-            width: 12px;
-            height: 12px;
-            background: #667eea;
-            border-radius: 50%;
-            border: 3px solid white;
+            position: absolute; left: -1.25rem; top: 0.85rem;
+            width: 8px; height: 8px;
+            background: #667eea; border-radius: 50%;
+            border: 2px solid var(--bg-secondary);
         }
-        
-        .activity-date {
-            font-size: 0.8rem;
-            color: #666;
-            margin-bottom: 0.5rem;
+        .activity-date { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+        .activity-desc { font-size: 0.82rem; color: var(--text-primary); font-weight: 500; }
+
+        /* Actions */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
         }
-        
-        .activity-description {
-            color: #333;
-            font-weight: 500;
+        .action-card {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.9rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.82rem; font-weight: 600;
+            transition: var(--transition-fast);
         }
-        
+        .action-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: #667eea; }
+        .action-card i { font-size: 1rem; color: #667eea; }
+
+        /* Avatar modal */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+            z-index: 9999; align-items: center; justify-content: center; padding: 2rem;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-secondary); border-radius: 16px;
+            padding: 1.5rem; max-width: 360px; width: 100%;
+            box-shadow: var(--shadow-xl); text-align: center;
+        }
+        .modal h3 { font-size: 1.05rem; margin-bottom: 1rem; color: var(--text-primary); }
+        .modal-btns { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.75rem; }
+        .modal-btns .btn { justify-content: center; }
+
         @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 15px;
-            }
-            
-            .profile-header {
-                padding: 1.5rem;
-            }
-            
-            .profile-content {
-                padding: 1.5rem;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
+            .profile-stats { grid-template-columns: 1fr 1fr; }
+            .info-grid { grid-template-columns: 1fr; }
+            .actions-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-brand"><i class="fas fa-brain"></i> Formation IA</div>
+        <div class="navbar-nav">
+            <div class="navbar-user">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ session.username }}</span>
+                {% if session.role == 'admin' %}
+                <span class="badge badge-admin"><i class="fas fa-crown"></i> Admin</span>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('index') }}" class="navbar-link"><i class="fas fa-home"></i> Accueil</a>
+            <a href="{{ url_for('mes_predictions') }}" class="navbar-link"><i class="fas fa-list"></i> Prédictions</a>
+            <a href="{{ url_for('messages') }}" class="navbar-link"><i class="fas fa-comments"></i> Messages</a>
+            <a href="{{ url_for('logout') }}" class="navbar-link"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+        </div>
+    </nav>
+
     <div class="container">
-        <!-- En-tête du profil -->
-        <div class="profile-header">
-            <div class="profile-avatar" onclick="openAvatarModal()">
+        <!-- Profile Banner -->
+        <div class="profile-banner animate-fade-in">
+            <div class="profile-avatar-wrapper" onclick="document.getElementById('avatarModal').classList.add('active')">
                 {% if user.avatar_type == 'file' and user.avatar_file %}
-                    <img src="/static/uploads/avatars/{{ user.avatar_file }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    <img src="/static/uploads/avatars/{{ user.avatar_file }}" alt="Avatar">
                 {% elif user.avatar %}
                     <i class="{{ user.avatar }}"></i>
                 {% else %}
@@ -326,7 +207,7 @@
                 {% endif %}
             </div>
             <h1 class="profile-name">{{ user.username }}</h1>
-            <div class="role-badge {% if user.role == 'admin' %}role-admin{% else %}role-user{% endif %}">
+            <div class="profile-role {% if user.role == 'admin' %}admin{% else %}user{% endif %}">
                 {% if user.role == 'admin' %}
                     <i class="fas fa-crown"></i> Administrateur
                 {% else %}
@@ -335,278 +216,163 @@
             </div>
         </div>
 
-        <div class="profile-content">
-            <!-- Statistiques -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar-plus"></i>
-                    </div>
-                    <div class="stat-value">
-                        {{ days_member }}
-                    </div>
-                    <div class="stat-label">Jours membre</div>
+        <!-- Stats -->
+        <div class="profile-stats animate-fade-in">
+            <div class="profile-stat">
+                <div class="profile-stat-icon"><i class="fas fa-calendar-plus"></i></div>
+                <div class="profile-stat-value">{{ days_member }}</div>
+                <div class="profile-stat-label">Jours membre</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="profile-stat-value">{{ user_stats.predictions_count or 0 }}</div>
+                <div class="profile-stat-label">Prédictions</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-icon"><i class="fas fa-comments"></i></div>
+                <div class="profile-stat-value">{{ user_stats.chatbot_messages or 0 }}</div>
+                <div class="profile-stat-label">Messages chatbot</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="profile-stat-value" style="font-size: 1rem;">
+                    {% if user.last_login %}{{ time_since_last_login }}{% else %}Jamais{% endif %}
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-value">{{ user_stats.predictions_count or 0 }}</div>
-                    <div class="stat-label">Prédictions</div>
+                <div class="profile-stat-label">Dernière visite</div>
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="info-section animate-fade-in">
+            <h3><i class="fas fa-info-circle"></i> Informations du compte</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-user"></i> Nom d'utilisateur</div>
+                    <div class="info-item-value">{{ user.username }}</div>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <div class="stat-value">{{ user_stats.chatbot_messages or 0 }}</div>
-                    <div class="stat-label">Messages chatbot</div>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-shield-alt"></i> Rôle</div>
+                    <div class="info-item-value">{{ user.role|title }}</div>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-clock"></i>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-calendar-plus"></i> Membre depuis</div>
+                    <div class="info-item-value">
+                        {% if user.created_at %}{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}
                     </div>
-                    <div class="stat-value">
-                        {% if user.last_login %}
-                            {{ time_since_last_login }}
-                        {% else %}
-                            Jamais
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-clock"></i> Dernière connexion</div>
+                    <div class="info-item-value">
+                        {% if user.last_login %}{{ user.last_login.strftime('%d/%m/%Y %H:%M') }}{% else %}Première connexion{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity -->
+        {% if recent_activities %}
+        <div class="info-section animate-fade-in">
+            <h3><i class="fas fa-history"></i> Activité récente</h3>
+            <div class="activity-timeline">
+                {% for activity in recent_activities %}
+                <div class="activity-item">
+                    <div class="activity-date">{{ activity.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                    <div class="activity-desc">
+                        {% if activity.type == 'prediction' %}
+                            <i class="fas fa-magic" style="color: #667eea;"></i> Prédiction : {{ activity.formation_suggeree }}
+                        {% elif activity.type == 'chatbot' %}
+                            <i class="fas fa-robot" style="color: #4facfe;"></i> Conversation chatbot
+                        {% elif activity.type == 'login' %}
+                            <i class="fas fa-sign-in-alt" style="color: #38d9a9;"></i> Connexion
                         {% endif %}
                     </div>
-                    <div class="stat-label">Dernière visite</div>
                 </div>
+                {% endfor %}
             </div>
+        </div>
+        {% endif %}
 
-            <!-- Informations détaillées -->
-            <div class="info-section">
-                <h3 class="section-title">
-                    <i class="fas fa-info-circle"></i>
-                    Informations du compte
-                </h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="fas fa-user"></i> Nom d'utilisateur
-                        </div>
-                        <div class="info-value">{{ user.username }}</div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="fas fa-shield-alt"></i> Rôle
-                        </div>
-                        <div class="info-value">{{ user.role|title }}</div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="fas fa-calendar-plus"></i> Membre depuis
-                        </div>
-                        <div class="info-value">
-                            {% if user.created_at %}
-                                {{ user.created_at.strftime('%d/%m/%Y à %H:%M') }}
-                            {% else %}
-                                Non disponible
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="fas fa-clock"></i> Dernière connexion
-                        </div>
-                        <div class="info-value">
-                            {% if user.last_login %}
-                                {{ user.last_login.strftime('%d/%m/%Y à %H:%M') }}
-                            {% else %}
-                                Première connexion
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Activité récente -->
-            {% if recent_activities %}
-            <div class="info-section">
-                <h3 class="section-title">
-                    <i class="fas fa-history"></i>
-                    Activité récente
-                </h3>
-                <div class="activity-timeline">
-                    {% for activity in recent_activities %}
-                    <div class="activity-item">
-                        <div class="activity-date">
-                            {{ activity.created_at.strftime('%d/%m/%Y à %H:%M') }}
-                        </div>
-                        <div class="activity-description">
-                            {% if activity.type == 'prediction' %}
-                                <i class="fas fa-magic text-primary"></i>
-                                Prédiction de formation : {{ activity.formation_suggeree }}
-                            {% elif activity.type == 'chatbot' %}
-                                <i class="fas fa-robot text-info"></i>
-                                Conversation avec le chatbot
-                            {% elif activity.type == 'login' %}
-                                <i class="fas fa-sign-in-alt text-success"></i>
-                                Connexion à l'application
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Actions -->
-            <div class="actions-section">
-                <h3 class="section-title">
-                    <i class="fas fa-cogs"></i>
-                    Actions disponibles
-                </h3>
-                
-                <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">
-                    <i class="fas fa-user-edit"></i> Modifier mon profil
+        <!-- Actions -->
+        <div class="info-section animate-fade-in">
+            <h3><i class="fas fa-cogs"></i> Actions</h3>
+            <div class="actions-grid">
+                <a href="{{ url_for('edit_profile') }}" class="action-card">
+                    <i class="fas fa-user-edit"></i> Modifier profil
                 </a>
-                
-                <a href="{{ url_for('change_password') }}" class="btn btn-primary">
-                    <i class="fas fa-key"></i> Changer mon mot de passe
+                <a href="{{ url_for('change_password') }}" class="action-card">
+                    <i class="fas fa-key"></i> Changer MDP
                 </a>
-                
-                <a href="{{ url_for('mes_predictions') }}" class="btn btn-info">
+                <a href="{{ url_for('mes_predictions') }}" class="action-card">
                     <i class="fas fa-history"></i> Mes Prédictions
                 </a>
-                
-                <a href="{{ url_for('chatbot_page') }}" class="btn btn-success">
+                <a href="{{ url_for('chatbot_page') }}" class="action-card">
                     <i class="fas fa-robot"></i> Chatbot IA
                 </a>
-                
-                {% if session.role == 'admin' %}
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                        <i class="fas fa-chart-line"></i> Dashboard
-                    </a>
-                    
-                    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
-                        <i class="fas fa-users-cog"></i> Gestion Utilisateurs
-                    </a>
-                {% endif %}
-                
-                <a href="{{ url_for('index') }}" class="btn btn-secondary">
-                    <i class="fas fa-home"></i> Accueil
+                <a href="{{ url_for('biometric_setup') }}" class="action-card">
+                    <i class="fas fa-fingerprint"></i> Empreinte
                 </a>
-                
-                <a href="{{ url_for('biometric_setup') }}" class="btn btn-success">
-                    <i class="fas fa-fingerprint"></i> 
-                    <span id="biometric-text">Configurer Empreinte</span>
+                {% if session.role == 'admin' %}
+                <a href="{{ url_for('dashboard') }}" class="action-card">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="{{ url_for('admin_users') }}" class="action-card">
+                    <i class="fas fa-users-cog"></i> Utilisateurs
+                </a>
+                {% endif %}
+                <a href="{{ url_for('index') }}" class="action-card">
+                    <i class="fas fa-home"></i> Accueil
                 </a>
             </div>
         </div>
     </div>
-</body>
-</html>
 
-<!-- Modal pour changer l'avatar -->
-<div id="avatarModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-    <div style="background-color: white; margin: 15% auto; padding: 20px; border-radius: 15px; width: 400px; text-align: center;">
-        <h3><i class="fas fa-camera"></i> Changer l'avatar</h3>
-        
-        <div style="margin: 20px 0;">
+    <!-- Avatar Modal -->
+    <div class="modal-overlay" id="avatarModal">
+        <div class="modal">
+            <h3><i class="fas fa-camera"></i> Changer l'avatar</h3>
             <input type="file" id="avatarFile" accept="image/*" style="display: none;">
-            <button onclick="document.getElementById('avatarFile').click()" class="btn btn-primary" style="margin: 10px;">
-                <i class="fas fa-upload"></i> Uploader une photo
-            </button>
-            <button onclick="changeRandomAvatar()" class="btn btn-secondary" style="margin: 10px;">
-                <i class="fas fa-random"></i> Avatar aléatoire
-            </button>
-        </div>
-        
-        <div style="margin-top: 20px;">
-            <button onclick="closeAvatarModal()" class="btn btn-secondary">
-                <i class="fas fa-times"></i> Annuler
+            <div class="modal-btns">
+                <button onclick="document.getElementById('avatarFile').click()" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Uploader une photo
+                </button>
+                <button onclick="changeRandomAvatar()" class="btn btn-secondary">
+                    <i class="fas fa-random"></i> Avatar aléatoire
+                </button>
+            </div>
+            <button onclick="document.getElementById('avatarModal').classList.remove('active')" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Fermer
             </button>
         </div>
     </div>
-</div>
 
-<script>
-function openAvatarModal() {
-    document.getElementById('avatarModal').style.display = 'block';
-}
-
-function closeAvatarModal() {
-    document.getElementById('avatarModal').style.display = 'none';
-}
-
-// Upload de fichier
-document.getElementById('avatarFile').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const formData = new FormData();
-        formData.append('avatar', file);
-        
-        fetch('/api/upload_avatar', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload();
-            } else {
-                alert('Erreur: ' + data.error);
-            }
-        })
-        .catch(error => {
-            alert('Erreur de connexion');
+    <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+    <script src="/static/js/theme-toggle.js"></script>
+    <script>
+        document.getElementById('avatarModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
         });
-        
-        closeAvatarModal();
-    }
-});
 
-function changeRandomAvatar() {
-    fetch('/api/upload_avatar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
+        document.getElementById('avatarFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('avatar', file);
+            fetch('/api/upload_avatar', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => { if (data.success) location.reload(); else alert('Erreur: ' + data.error); })
+            .catch(() => alert('Erreur réseau'));
+        });
+
+        function changeRandomAvatar() {
+            fetch('/api/upload_avatar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: 'random'})
+            })
+            .then(r => r.json())
+            .then(data => { if (data.success) location.reload(); else alert('Erreur: ' + data.error); })
+            .catch(() => alert('Erreur réseau'));
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            location.reload();
-        } else {
-            alert('Erreur: ' + data.error);
-        }
-    })
-    .catch(error => {
-        alert('Erreur de connexion');
-    });
-    
-    closeAvatarModal();
-}
-
-// Fermer le modal en cliquant à l'extérieur
-window.onclick = function(event) {
-    const modal = document.getElementById('avatarModal');
-    if (event.target == modal) {
-        closeAvatarModal();
-    }
-}
-
-// Vérifier si l'utilisateur a déjà configuré son empreinte
-fetch('/api/biometric/status')
-    .then(response => response.json())
-    .then(data => {
-        const biometricText = document.getElementById('biometric-text');
-        if (data.has_biometric) {
-            biometricText.textContent = 'Gérer Empreinte';
-        }
-    })
-    .catch(error => console.error('Erreur:', error));
-</script>
-
-
+    </script>
+</body>
+</html>
