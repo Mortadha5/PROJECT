@@ -64,3 +64,35 @@ def test_logout(auth_client):
     """Le logout redirige vers login"""
     response = auth_client.get('/logout', follow_redirects=False)
     assert response.status_code == 302
+
+
+def test_roadmap_page_loads(auth_client):
+    """La page roadmap se charge"""
+    response = auth_client.get('/roadmap')
+    assert response.status_code == 200
+
+
+def test_roadmap_with_formation(auth_client):
+    """La roadmap se charge avec une formation spécifique"""
+    response = auth_client.get('/roadmap?formation=Python')
+    assert response.status_code == 200
+
+
+def test_roadmap_user_progress_api(auth_client):
+    """L'API progression retourne un JSON valide"""
+    response = auth_client.get('/api/roadmap/user_progress?formation=Python')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['success'] is True
+
+
+def test_admin_roadmaps_requires_admin(auth_client):
+    """La page admin roadmaps est réservée aux admins"""
+    response = auth_client.get('/admin/roadmaps')
+    assert response.status_code == 403
+
+
+def test_admin_roadmaps_loads(admin_client):
+    """La page admin roadmaps se charge pour un admin"""
+    response = admin_client.get('/admin/roadmaps')
+    assert response.status_code == 200

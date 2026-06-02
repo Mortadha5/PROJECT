@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap de Formation - Formation IA</title>
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .roadmap-container { max-width: 900px; margin: 0 auto; }
+
+        /* Selector */
+        .formation-selector {
+            background: var(--card-bg, #fff);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        .formation-selector select {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            border: 2px solid rgba(102,126,234,0.15);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(102,126,234,0.03);
+            color: var(--text-primary, #333);
+        }
+        .formation-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn-start {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.35); }
+
+        /* Progress Bar */
+        .progress-section {
+            background: var(--card-bg, #fff);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            margin-bottom: 2rem;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .progress-header h3 { margin: 0; color: var(--text-primary); font-size: 1.1rem; }
+        .progress-percent {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(102,126,234,0.1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .progress-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .progress-stats span i { margin-right: 4px; }
+
+        /* Timeline */
+        .timeline { position: relative; padding: 0; }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 28px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #667eea, #764ba2, #28a745);
+            border-radius: 2px;
+        }
+
+        .phase-card {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 70px;
+        }
+
+        .phase-marker {
+            position: absolute;
+            left: 10px;
+            top: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            z-index: 2;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .phase-content {
+            background: var(--card-bg, #fff);
+            border-radius: 16px;
+            padding: 1.8rem;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.06);
+            border: 1px solid rgba(102,126,234,0.08);
+            transition: all 0.3s;
+        }
+        .phase-content:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(0,0,0,0.1);
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+        }
+        .phase-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .phase-duration {
+            background: rgba(102,126,234,0.1);
+            color: #667eea;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Skills list */
+        .skills-list { list-style: none; padding: 0; margin: 0; }
+        .skill-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .skill-item:hover {
+            background: rgba(102,126,234,0.05);
+            border-color: rgba(102,126,234,0.1);
+        }
+        .skill-item.completed {
+            background: rgba(40,167,69,0.06);
+            border-color: rgba(40,167,69,0.15);
+        }
+        .skill-item.completed .skill-name {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .skill-checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(102,126,234,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .skill-item.completed .skill-checkbox {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        .skill-name { flex: 1; font-size: 0.95rem; color: var(--text-primary); }
+
+        .skill-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .skill-badge.théorie { background: rgba(23,162,184,0.1); color: #17a2b8; }
+        .skill-badge.pratique { background: rgba(253,126,20,0.1); color: #fd7e14; }
+        .skill-badge.projet { background: rgba(220,53,69,0.1); color: #dc3545; }
+
+        /* Tips section */
+        .tips-card {
+            background: linear-gradient(135deg, rgba(102,126,234,0.05), rgba(118,75,162,0.05));
+            border: 1px solid rgba(102,126,234,0.15);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-top: 2rem;
+        }
+        .tips-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        .tip-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .tip-item i { color: #667eea; }
+
+        /* Resources */
+        .resources-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .resource-card {
+            background: var(--card-bg, #fff);
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .resource-card h4 {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .resource-tag {
+            display: inline-block;
+            background: rgba(102,126,234,0.08);
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            margin: 3px;
+            font-weight: 500;
+        }
+        .cert-tag {
+            display: inline-block;
+            background: rgba(40,167,69,0.08);
+            color: #28a745;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            margin: 3px;
+            font-weight: 500;
+        }
+
+        /* Completed overlay */
+        .roadmap-completed {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(40,167,69,0.05), rgba(32,201,151,0.05));
+            border: 2px solid rgba(40,167,69,0.2);
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            display: none;
+        }
+        .roadmap-completed.show { display: block; }
+        .roadmap-completed i { font-size: 3rem; color: #28a745; margin-bottom: 1rem; }
+
+        @media (max-width: 768px) {
+            .resources-section { grid-template-columns: 1fr; }
+            .phase-card { padding-left: 55px; }
+            .timeline::before { left: 18px; }
+            .phase-marker { left: 0; width: 36px; height: 36px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand"><i class="fas fa-brain"></i> Formation IA</div>
+        <div class="navbar-nav">
+            <a href="{{ url_for('index') }}" class="navbar-link"><i class="fas fa-home"></i> Accueil</a>
+            <a href="{{ url_for('roadmap_page') }}" class="navbar-link active"><i class="fas fa-route"></i> Roadmap</a>
+            {% if session.role == 'admin' %}
+            <a href="{{ url_for('admin_roadmaps') }}" class="navbar-link"><i class="fas fa-chart-pie"></i> Admin Roadmaps</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="navbar-link"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="roadmap-container">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 style="font-size: 2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+                    <i class="fas fa-route" style="color: #667eea;"></i> Roadmap de Formation
+                </h1>
+                <p style="color: var(--text-secondary); font-size: 1rem;">
+                    Votre parcours d'apprentissage personnalisé, étape par étape
+                </p>
+            </div>
+
+            <!-- Formation Selector -->
+            <div class="formation-selector">
+                <label style="font-weight: 600; color: var(--text-primary);"><i class="fas fa-graduation-cap" style="color: #667eea;"></i> Formation :</label>
+                <select id="formationSelect" onchange="changeFormation()">
+                    {% for f in all_formations %}
+                    <option value="{{ f }}" {% if f == selected_formation %}selected{% endif %}>{{ f }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn-start" onclick="startRoadmap()">
+                    <i class="fas fa-play"></i> Démarrer ce parcours
+                </button>
+            </div>
+
+            <!-- Completed banner -->
+            <div class="roadmap-completed" id="completedBanner">
+                <i class="fas fa-trophy"></i>
+                <h2 style="color: #28a745; margin-bottom: 0.5rem;">Parcours Terminé !</h2>
+                <p style="color: var(--text-secondary);">Félicitations ! Vous avez complété toutes les étapes.</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-section">
+                <div class="progress-header">
+                    <h3><i class="fas fa-tasks" style="color: #667eea; margin-right: 8px;"></i> Progression</h3>
+                    <span class="progress-percent" id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
+                </div>
+                <div class="progress-stats">
+                    <span><i class="fas fa-check-circle" style="color: #28a745;"></i> <span id="completedCount">0</span> terminées</span>
+                    <span><i class="fas fa-clock" style="color: #fd7e14;"></i> Durée totale : {{ roadmap.total_duration }}</span>
+                    <span><i class="fas fa-tachometer-alt" style="color: #667eea;"></i> Rythme : {{ roadmap.pace }}</span>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline" id="timeline">
+                {% for phase in roadmap.phases %}
+                {% set phase_idx = loop.index0 %}
+                <div class="phase-card">
+                    <div class="phase-marker" style="background: {{ phase.color }};">
+                        <i class="{{ phase.icon }}"></i>
+                    </div>
+                    <div class="phase-content">
+                        <div class="phase-header">
+                            <span class="phase-title">{{ phase.title }}</span>
+                            <span class="phase-duration"><i class="far fa-clock"></i> {{ phase.duration }}</span>
+                        </div>
+                        <ul class="skills-list">
+                            {% for skill in phase.skills %}
+                            <li class="skill-item" data-phase="{{ phase_idx }}" data-skill="{{ loop.index0 }}" onclick="toggleSkill(this)">
+                                <div class="skill-checkbox">
+                                    <i class="fas fa-check" style="font-size: 0.7rem; display: none;"></i>
+                                </div>
+                                <span class="skill-name">{{ skill.name }}</span>
+                                <span class="skill-badge {{ skill.type }}">{{ skill.type }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Tips -->
+            {% if roadmap.tips %}
+            <div class="tips-card">
+                <h4><i class="fas fa-lightbulb" style="color: #ffc107;"></i> Conseils Personnalisés</h4>
+                {% for tip in roadmap.tips %}
+                <div class="tip-item">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>{{ tip }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Resources & Certifications -->
+            <div class="resources-section">
+                <div class="resource-card">
+                    <h4><i class="fas fa-book" style="color: #667eea;"></i> Ressources Recommandées</h4>
+                    {% for res in roadmap.resources %}
+                    <span class="resource-tag">{{ res }}</span>
+                    {% endfor %}
+                </div>
+                <div class="resource-card">
+                    <h4><i class="fas fa-certificate" style="color: #28a745;"></i> Certifications Visées</h4>
+                    {% for cert in roadmap.certifications %}
+                    <span class="cert-tag">{{ cert }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const currentFormation = "{{ selected_formation }}";
+        let completedSteps = [];
+
+        // Charger la progression existante
+        async function loadProgress() {
+            try {
+                const res = await fetch(`/api/roadmap/user_progress?formation=${encodeURIComponent(currentFormation)}`);
+                const data = await res.json();
+                if (data.success && data.roadmap) {
+                    completedSteps = data.roadmap.completed_steps || [];
+                    applyProgress();
+                }
+            } catch (e) {
+                console.log("Pas de progression sauvegardée");
+            }
+        }
+
+        function applyProgress() {
+            document.querySelectorAll('.skill-item').forEach(item => {
+                const key = `${item.dataset.phase}_${item.dataset.skill}`;
+                if (completedSteps.includes(key)) {
+                    item.classList.add('completed');
+                    item.querySelector('.fa-check').style.display = 'block';
+                }
+            });
+            updateProgressBar();
+        }
+
+        async function toggleSkill(element) {
+            const phaseIdx = element.dataset.phase;
+            const skillIdx = element.dataset.skill;
+
+            element.classList.toggle('completed');
+            const checkIcon = element.querySelector('.fa-check');
+            checkIcon.style.display = element.classList.contains('completed') ? 'block' : 'none';
+
+            // Sauvegarder
+            try {
+                const res = await fetch('/api/roadmap/progress', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formation: currentFormation,
+                        phase_index: parseInt(phaseIdx),
+                        skill_index: parseInt(skillIdx)
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    completedSteps = data.completed_steps;
+                    updateProgressBar(data.progress);
+                    if (data.status === 'completed') {
+                        document.getElementById('completedBanner').classList.add('show');
+                    } else {
+                        document.getElementById('completedBanner').classList.remove('show');
+                    }
+                }
+            } catch (e) {
+                console.error('Erreur sauvegarde:', e);
+            }
+        }
+
+        function updateProgressBar(progress) {
+            if (progress === undefined) {
+                const total = document.querySelectorAll('.skill-item').length;
+                const done = document.querySelectorAll('.skill-item.completed').length;
+                progress = Math.round((done / total) * 100);
+            }
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressPercent').textContent = progress + '%';
+            document.getElementById('completedCount').textContent = document.querySelectorAll('.skill-item.completed').length;
+        }
+
+        function changeFormation() {
+            const formation = document.getElementById('formationSelect').value;
+            window.location.href = `/roadmap?formation=${encodeURIComponent(formation)}`;
+        }
+
+        async function startRoadmap() {
+            const formation = document.getElementById('formationSelect').value;
+            try {
+                const res = await fetch('/api/roadmap/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ formation: formation })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const btn = document.querySelector('.btn-start');
+                    btn.innerHTML = '<i class="fas fa-check"></i> Parcours en cours';
+                    btn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                }
+            } catch (e) {
+                console.error('Erreur:', e);
+            }
+        }
+
+        // Init
+        loadProgress();
+    </script>
+</body>
+</html>

@@ -1865,5 +1865,508 @@ def delete_notification():
         )
     return jsonify({"success": True})
 
+# ==================== ROADMAP DE FORMATION PERSONNALISÉE ====================
+
+FORMATION_ROADMAPS = {
+    "Python": {
+        "phases": [
+            {
+                "title": "Fondamentaux",
+                "duration": "4-6 semaines",
+                "icon": "fas fa-seedling",
+                "color": "#28a745",
+                "skills": [
+                    {"name": "Syntaxe Python & types de données", "type": "théorie"},
+                    {"name": "Structures de contrôle & fonctions", "type": "théorie"},
+                    {"name": "POO : classes, héritage, polymorphisme", "type": "pratique"},
+                    {"name": "Projet : CLI tool (gestionnaire de tâches)", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Développement Web",
+                "duration": "6-8 semaines",
+                "icon": "fas fa-globe",
+                "color": "#667eea",
+                "skills": [
+                    {"name": "Flask/Django : routes, templates, formulaires", "type": "théorie"},
+                    {"name": "APIs REST : CRUD, authentification", "type": "pratique"},
+                    {"name": "Bases de données : SQL & MongoDB", "type": "pratique"},
+                    {"name": "Projet : Application web complète", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Data & Automatisation",
+                "duration": "6-8 semaines",
+                "icon": "fas fa-chart-bar",
+                "color": "#fd7e14",
+                "skills": [
+                    {"name": "Pandas, NumPy : manipulation de données", "type": "théorie"},
+                    {"name": "Visualisation : Matplotlib, Seaborn", "type": "pratique"},
+                    {"name": "Scripting & automatisation", "type": "pratique"},
+                    {"name": "Projet : Dashboard d'analyse de données", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Spécialisation & Portfolio",
+                "duration": "4-6 semaines",
+                "icon": "fas fa-trophy",
+                "color": "#dc3545",
+                "skills": [
+                    {"name": "Tests unitaires & CI/CD", "type": "pratique"},
+                    {"name": "Docker & déploiement cloud", "type": "pratique"},
+                    {"name": "Contribution open source", "type": "pratique"},
+                    {"name": "Projet final : Application déployée", "type": "projet"},
+                ]
+            }
+        ],
+        "resources": ["Real Python", "Python.org Docs", "Exercism", "LeetCode"],
+        "certifications": ["PCEP", "PCAP", "AWS Cloud Practitioner"]
+    },
+    "JavaScript": {
+        "phases": [
+            {
+                "title": "Bases du Langage",
+                "duration": "3-4 semaines",
+                "icon": "fas fa-seedling",
+                "color": "#28a745",
+                "skills": [
+                    {"name": "Variables, types, fonctions, scope", "type": "théorie"},
+                    {"name": "DOM manipulation & événements", "type": "pratique"},
+                    {"name": "Asynchrone : Promises, async/await", "type": "théorie"},
+                    {"name": "Projet : Page web interactive", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Framework Front-end",
+                "duration": "6-8 semaines",
+                "icon": "fas fa-layer-group",
+                "color": "#667eea",
+                "skills": [
+                    {"name": "React.js : composants, hooks, state", "type": "théorie"},
+                    {"name": "Routing, context API, formulaires", "type": "pratique"},
+                    {"name": "Tailwind CSS / Material UI", "type": "pratique"},
+                    {"name": "Projet : Single Page Application", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Back-end & Full-Stack",
+                "duration": "5-6 semaines",
+                "icon": "fas fa-server",
+                "color": "#fd7e14",
+                "skills": [
+                    {"name": "Node.js & Express : API REST", "type": "théorie"},
+                    {"name": "Base de données : MongoDB, PostgreSQL", "type": "pratique"},
+                    {"name": "Authentification JWT & sécurité", "type": "pratique"},
+                    {"name": "Projet : API back-end complète", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Déploiement & Carrière",
+                "duration": "3-4 semaines",
+                "icon": "fas fa-trophy",
+                "color": "#dc3545",
+                "skills": [
+                    {"name": "Testing : Jest, Cypress", "type": "pratique"},
+                    {"name": "Déploiement : Vercel, Netlify, AWS", "type": "pratique"},
+                    {"name": "TypeScript : typage avancé", "type": "théorie"},
+                    {"name": "Projet final : App full-stack déployée", "type": "projet"},
+                ]
+            }
+        ],
+        "resources": ["MDN Web Docs", "JavaScript.info", "FreeCodeCamp", "Frontend Mentor"],
+        "certifications": ["Meta Front-End Developer", "AWS Developer Associate"]
+    },
+    "Data Science": {
+        "phases": [
+            {
+                "title": "Mathématiques & Stats",
+                "duration": "4-6 semaines",
+                "icon": "fas fa-calculator",
+                "color": "#28a745",
+                "skills": [
+                    {"name": "Algèbre linéaire & calcul matriciel", "type": "théorie"},
+                    {"name": "Statistiques descriptives & inférentielles", "type": "théorie"},
+                    {"name": "Probabilités & distributions", "type": "théorie"},
+                    {"name": "Projet : Analyse statistique d'un dataset", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Manipulation de Données",
+                "duration": "6-8 semaines",
+                "icon": "fas fa-database",
+                "color": "#667eea",
+                "skills": [
+                    {"name": "Python : Pandas, NumPy avancé", "type": "pratique"},
+                    {"name": "Nettoyage & transformation de données", "type": "pratique"},
+                    {"name": "Visualisation : Matplotlib, Plotly, Seaborn", "type": "pratique"},
+                    {"name": "Projet : EDA complet sur dataset réel", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Machine Learning",
+                "duration": "8-10 semaines",
+                "icon": "fas fa-brain",
+                "color": "#fd7e14",
+                "skills": [
+                    {"name": "Régression, classification, clustering", "type": "théorie"},
+                    {"name": "Scikit-learn : pipelines, validation croisée", "type": "pratique"},
+                    {"name": "Deep Learning : TensorFlow/PyTorch intro", "type": "pratique"},
+                    {"name": "Projet : Modèle ML déployé (API)", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Spécialisation",
+                "duration": "6-8 semaines",
+                "icon": "fas fa-trophy",
+                "color": "#dc3545",
+                "skills": [
+                    {"name": "NLP ou Computer Vision (au choix)", "type": "théorie"},
+                    {"name": "MLOps : MLflow, Docker, CI/CD", "type": "pratique"},
+                    {"name": "Big Data : Spark, cloud (GCP/AWS)", "type": "pratique"},
+                    {"name": "Projet final : Pipeline ML end-to-end", "type": "projet"},
+                ]
+            }
+        ],
+        "resources": ["Kaggle", "Coursera (Andrew Ng)", "Towards Data Science", "Fast.ai"],
+        "certifications": ["Google Data Analytics", "IBM Data Science", "TensorFlow Developer"]
+    },
+    "DevOps": {
+        "phases": [
+            {
+                "title": "Fondamentaux Système",
+                "duration": "4-5 semaines",
+                "icon": "fas fa-terminal",
+                "color": "#28a745",
+                "skills": [
+                    {"name": "Linux : commandes, shell scripting", "type": "théorie"},
+                    {"name": "Réseau : TCP/IP, DNS, HTTP, ports", "type": "théorie"},
+                    {"name": "Git avancé : branching, merge, rebase", "type": "pratique"},
+                    {"name": "Projet : Scripts d'automatisation serveur", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Conteneurisation & Orchestration",
+                "duration": "6-8 semaines",
+                "icon": "fas fa-docker",
+                "color": "#667eea",
+                "skills": [
+                    {"name": "Docker : images, volumes, networks", "type": "théorie"},
+                    {"name": "Docker Compose : multi-services", "type": "pratique"},
+                    {"name": "Kubernetes : pods, services, deployments", "type": "pratique"},
+                    {"name": "Projet : App multi-conteneurs orchestrée", "type": "projet"},
+                ]
+            },
+            {
+                "title": "CI/CD & Infrastructure",
+                "duration": "6-8 semaines",
+                "icon": "fas fa-infinity",
+                "color": "#fd7e14",
+                "skills": [
+                    {"name": "GitHub Actions / GitLab CI / Jenkins", "type": "pratique"},
+                    {"name": "Terraform / Ansible : IaC", "type": "pratique"},
+                    {"name": "Cloud : AWS/GCP/Azure services essentiels", "type": "théorie"},
+                    {"name": "Projet : Pipeline CI/CD complet", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Monitoring & SRE",
+                "duration": "4-6 semaines",
+                "icon": "fas fa-trophy",
+                "color": "#dc3545",
+                "skills": [
+                    {"name": "Monitoring : Prometheus, Grafana", "type": "pratique"},
+                    {"name": "Logging : ELK Stack / Loki", "type": "pratique"},
+                    {"name": "SRE : SLOs, incident response, chaos engineering", "type": "théorie"},
+                    {"name": "Projet final : Infra monitorée complète", "type": "projet"},
+                ]
+            }
+        ],
+        "resources": ["KodeKloud", "Linux Academy", "Docker Docs", "Kubernetes.io"],
+        "certifications": ["CKA (Kubernetes)", "AWS Solutions Architect", "Terraform Associate"]
+    },
+    "Cybersécurité": {
+        "phases": [
+            {
+                "title": "Fondamentaux Sécurité",
+                "duration": "5-6 semaines",
+                "icon": "fas fa-shield-alt",
+                "color": "#28a745",
+                "skills": [
+                    {"name": "Concepts : CIA, authentification, chiffrement", "type": "théorie"},
+                    {"name": "Réseau : protocoles, pare-feu, VPN", "type": "théorie"},
+                    {"name": "Linux sécurité : permissions, logs, hardening", "type": "pratique"},
+                    {"name": "Projet : Audit de sécurité basique", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Tests de Pénétration",
+                "duration": "8-10 semaines",
+                "icon": "fas fa-bug",
+                "color": "#667eea",
+                "skills": [
+                    {"name": "OWASP Top 10 : vulnérabilités web", "type": "théorie"},
+                    {"name": "Outils : Burp Suite, Nmap, Metasploit", "type": "pratique"},
+                    {"name": "Pentest web : SQLi, XSS, CSRF", "type": "pratique"},
+                    {"name": "Projet : Rapport de pentest (lab)", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Défense & SOC",
+                "duration": "6-8 semaines",
+                "icon": "fas fa-eye",
+                "color": "#fd7e14",
+                "skills": [
+                    {"name": "SIEM : Splunk, QRadar, Wazuh", "type": "pratique"},
+                    {"name": "Analyse de malware & forensics", "type": "pratique"},
+                    {"name": "Incident response & threat hunting", "type": "théorie"},
+                    {"name": "Projet : Détection d'intrusion (lab)", "type": "projet"},
+                ]
+            },
+            {
+                "title": "Spécialisation & Certification",
+                "duration": "6-8 semaines",
+                "icon": "fas fa-trophy",
+                "color": "#dc3545",
+                "skills": [
+                    {"name": "Cloud Security : AWS/Azure security", "type": "pratique"},
+                    {"name": "DevSecOps : SAST, DAST, pipelines sécurisés", "type": "pratique"},
+                    {"name": "GRC : conformité, RGPD, ISO 27001", "type": "théorie"},
+                    {"name": "Projet final : Architecture sécurisée complète", "type": "projet"},
+                ]
+            }
+        ],
+        "resources": ["TryHackMe", "HackTheBox", "PortSwigger Academy", "SANS"],
+        "certifications": ["CompTIA Security+", "CEH", "OSCP", "CISSP"]
+    }
+}
+
+
+def generate_personalized_roadmap(formation, age, experience):
+    """Génère une roadmap personnalisée basée sur le profil"""
+    roadmap = FORMATION_ROADMAPS.get(formation)
+    if not roadmap:
+        return None
+
+    # Personnalisation selon le profil
+    tips = []
+    pace = "normal"
+
+    if experience < 2:
+        tips.append("Prenez votre temps sur les fondamentaux, ils sont essentiels")
+        tips.append("Pratiquez chaque jour, même 30 minutes")
+        pace = "progressif"
+    elif experience >= 5:
+        tips.append("Vous pouvez accélérer les phases 1 et 2")
+        tips.append("Concentrez-vous sur les projets avancés")
+        pace = "accéléré"
+
+    if age < 25:
+        tips.append("Profitez de votre flexibilité pour faire des stages/alternances")
+        tips.append("Participez à des hackathons et meetups")
+    elif age > 40:
+        tips.append("Valorisez votre expérience professionnelle dans vos projets")
+        tips.append("Privilégiez les formations certifiantes reconnues")
+
+    total_weeks = 0
+    for phase in roadmap["phases"]:
+        duration = phase["duration"]
+        weeks = int(duration.split("-")[1].split(" ")[0])
+        total_weeks += weeks
+
+    return {
+        "formation": formation,
+        "phases": roadmap["phases"],
+        "resources": roadmap["resources"],
+        "certifications": roadmap["certifications"],
+        "tips": tips,
+        "pace": pace,
+        "total_duration": f"{total_weeks // 4}-{(total_weeks + 4) // 4} mois"
+    }
+
+
+@app.route("/roadmap")
+@login_required
+def roadmap_page():
+    """Page de roadmap personnalisée"""
+    formation = request.args.get("formation")
+    age = request.args.get("age", type=int, default=25)
+    experience = request.args.get("experience", type=int, default=0)
+
+    # Si pas de formation spécifiée, récupérer la dernière prédiction de l'utilisateur
+    if not formation:
+        last_pred = collection.find_one(
+            {"created_by": session["username"]},
+            sort=[("created_at", -1)]
+        )
+        if last_pred:
+            formation = last_pred.get("formation_suggeree", "Python")
+            age = last_pred.get("age", 25)
+            experience = last_pred.get("experience", 0)
+        else:
+            formation = "Python"
+
+    roadmap = generate_personalized_roadmap(formation, age, experience)
+    all_formations = list(FORMATION_ROADMAPS.keys())
+
+    return render_template("roadmap.html",
+                           roadmap=roadmap,
+                           all_formations=all_formations,
+                           selected_formation=formation,
+                           age=age,
+                           experience=experience)
+
+
+@app.route("/api/roadmap", methods=["POST"])
+@login_required
+def api_roadmap():
+    """API pour générer une roadmap"""
+    data = request.get_json()
+    formation = data.get("formation")
+    age = data.get("age", 25)
+    experience = data.get("experience", 0)
+
+    roadmap = generate_personalized_roadmap(formation, age, experience)
+    if not roadmap:
+        return jsonify({"error": "Formation non trouvée"}), 404
+
+    return jsonify({"success": True, "roadmap": roadmap})
+
+
+@app.route("/api/roadmap/start", methods=["POST"])
+@login_required
+def start_roadmap():
+    """Démarrer une roadmap - sauvegarder dans MongoDB"""
+    data = request.get_json()
+    formation = data.get("formation")
+    age = data.get("age", 25)
+    experience = data.get("experience", 0)
+
+    if formation not in FORMATION_ROADMAPS:
+        return jsonify({"error": "Formation non trouvée"}), 404
+
+    username = session["username"]
+
+    # Vérifier si l'utilisateur a déjà une roadmap pour cette formation
+    existing = db["roadmaps"].find_one({"username": username, "formation": formation})
+    if existing:
+        return jsonify({"success": True, "roadmap_id": str(existing["_id"]), "message": "Roadmap existante"})
+
+    roadmap_data = {
+        "username": username,
+        "formation": formation,
+        "age": age,
+        "experience": experience,
+        "started_at": datetime.now(),
+        "completed_steps": [],
+        "progress": 0,
+        "status": "in_progress"
+    }
+    result = db["roadmaps"].insert_one(roadmap_data)
+
+    send_notification(username, "info", "Roadmap démarrée",
+                      f"Votre parcours {formation} a commencé !", link="/roadmap")
+
+    return jsonify({"success": True, "roadmap_id": str(result.inserted_id)})
+
+
+@app.route("/api/roadmap/progress", methods=["POST"])
+@login_required
+def update_roadmap_progress():
+    """Marquer une étape comme terminée"""
+    data = request.get_json()
+    formation = data.get("formation")
+    phase_index = data.get("phase_index")
+    skill_index = data.get("skill_index")
+
+    username = session["username"]
+    step_key = f"{phase_index}_{skill_index}"
+
+    roadmap_doc = db["roadmaps"].find_one({"username": username, "formation": formation})
+
+    if not roadmap_doc:
+        # Créer la roadmap si elle n'existe pas
+        roadmap_doc = {
+            "username": username,
+            "formation": formation,
+            "started_at": datetime.now(),
+            "completed_steps": [],
+            "progress": 0,
+            "status": "in_progress"
+        }
+        db["roadmaps"].insert_one(roadmap_doc)
+
+    completed = roadmap_doc.get("completed_steps", [])
+
+    if step_key in completed:
+        # Dé-cocher
+        completed.remove(step_key)
+    else:
+        # Cocher
+        completed.append(step_key)
+
+    # Calculer la progression
+    total_steps = sum(len(phase["skills"]) for phase in FORMATION_ROADMAPS[formation]["phases"])
+    progress = round((len(completed) / total_steps) * 100)
+
+    status = "completed" if progress == 100 else "in_progress"
+
+    db["roadmaps"].update_one(
+        {"username": username, "formation": formation},
+        {"$set": {"completed_steps": completed, "progress": progress, "status": status,
+                  "updated_at": datetime.now()}}
+    )
+
+    if progress == 100:
+        send_notification(username, "success", "Roadmap terminée !",
+                          f"Félicitations ! Vous avez terminé le parcours {formation} !",
+                          link="/roadmap")
+
+    return jsonify({"success": True, "progress": progress, "completed_steps": completed, "status": status})
+
+
+@app.route("/api/roadmap/user_progress")
+@login_required
+def get_user_roadmap_progress():
+    """Récupérer la progression de l'utilisateur"""
+    username = session["username"]
+    formation = request.args.get("formation")
+
+    if formation:
+        doc = db["roadmaps"].find_one({"username": username, "formation": formation}, {"_id": 0})
+        return jsonify({"success": True, "roadmap": doc})
+    else:
+        docs = list(db["roadmaps"].find({"username": username}, {"_id": 0}))
+        return jsonify({"success": True, "roadmaps": docs})
+
+
+@app.route("/admin/roadmaps")
+@admin_required
+def admin_roadmaps():
+    """Page admin : vue d'ensemble des roadmaps"""
+    all_roadmaps = list(db["roadmaps"].find().sort("started_at", -1))
+    for r in all_roadmaps:
+        r["_id"] = str(r["_id"])
+
+    # Statistiques
+    total_roadmaps = len(all_roadmaps)
+    completed_count = sum(1 for r in all_roadmaps if r.get("status") == "completed")
+    in_progress_count = total_roadmaps - completed_count
+    avg_progress = round(sum(r.get("progress", 0) for r in all_roadmaps) / max(total_roadmaps, 1))
+
+    # Formations les plus suivies
+    formation_counts = {}
+    for r in all_roadmaps:
+        f = r.get("formation", "Inconnu")
+        formation_counts[f] = formation_counts.get(f, 0) + 1
+
+    return render_template("admin_roadmaps.html",
+                           roadmaps=all_roadmaps,
+                           total_roadmaps=total_roadmaps,
+                           completed_count=completed_count,
+                           in_progress_count=in_progress_count,
+                           avg_progress=avg_progress,
+                           formation_counts=formation_counts)
+
+
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0", port=5555)
