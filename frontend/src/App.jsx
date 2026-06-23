@@ -1,6 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Login from './pages/Login/Login';
@@ -80,15 +80,28 @@ function AppRoutes() {
   );
 }
 
+function AppLayout() {
+  const { user } = useAuth();
+  const location = useLocation();
+  const isAuthPage = ['/login', '/register', '/forgot_password'].includes(location.pathname);
+  const showNavbar = user && !isAuthPage;
+
+  return (
+    <>
+      {showNavbar && <Navbar />}
+      <main className={showNavbar ? 'main-content' : ''}>
+        <AppRoutes />
+      </main>
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+    </>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Navbar />
-        <main className="main-content">
-          <AppRoutes />
-        </main>
-        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        <AppLayout />
       </AuthProvider>
     </BrowserRouter>
   );
