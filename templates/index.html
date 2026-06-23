@@ -56,9 +56,6 @@
                     <i class="fas fa-comments"></i> Messages
                 </a>
             {% else %}
-                <a href="{{ url_for('mes_predictions') }}" class="navbar-link">
-                    <i class="fas fa-list"></i> Mes Prédictions
-                </a>
                 <a href="{{ url_for('mon_profil') }}" class="navbar-link">
                     <i class="fas fa-user-edit"></i> Mon Profil
                 </a>
@@ -76,11 +73,13 @@
                 <i class="fas fa-route"></i> Roadmap
             </a>
 
-            <!-- Notification Bell -->
+            <!-- Notification Bell (admin only) -->
+            {% if session.role == 'admin' %}
             <a href="{{ url_for('notifications_page') }}" class="navbar-link" id="notifBell" style="position: relative;">
                 <i class="fas fa-bell"></i>
                 <span id="notifCount" style="display: none; position: absolute; top: -5px; right: -5px; background: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center;"></span>
             </a>
+            {% endif %}
 
             <a href="{{ url_for('logout') }}" class="navbar-link">
                 <i class="fas fa-sign-out-alt"></i> Déconnexion
@@ -509,7 +508,8 @@
         checkUnreadMessages();
     </script>
 
-    <!-- SocketIO pour notifications en temps réel -->
+    <!-- SocketIO pour notifications en temps réel (admin only) -->
+    {% if session.role == 'admin' %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
     <script>
         const socket = io();
@@ -562,6 +562,7 @@
         loadNotifCount();
         setInterval(loadNotifCount, 60000);
     </script>
+    {% endif %}
 
     <style>
         @keyframes slideIn {

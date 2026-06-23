@@ -8,20 +8,44 @@ import numpy as np
 # Charger le dataset
 df = pd.read_csv("dataset_employes_formation_complet.csv")
 
-# Encodage amélioré
-df["competence"] = df["competence"].str.lower()
-competences = df["competence"].unique()
-formations = df["formation_suggeree"].unique()
+# Extraire toutes les compétences individuelles
+all_competences = set()
+for row in df["competence"]:
+    for c in row.split(","):
+        all_competences.add(c.strip().lower())
 
-comp_dict = {c: i for i, c in enumerate(competences)}
+all_competences = sorted(all_competences)
+print(f"Compétences trouvées: {all_competences}")
+
+# Créer le dictionnaire de compétences (pour one-hot encoding)
+comp_dict = {c: i for i, c in enumerate(all_competences)}
+
+# Encodage des formations
+formations = df["formation_suggeree"].unique()
 form_dict = {f: i for i, f in enumerate(formations)}
 inv_form_dict = {v: k for k, v in form_dict.items()}
 
-df["comp_encoded"] = df["competence"].map(comp_dict)
-df["form_encoded"] = df["formation_suggeree"].map(form_dict)
+# Créer les features one-hot pour les compétences
+def encode_competences(competence_str, comp_dict):
+    """Encode les compétences en vecteur one-hot"""
+    vector = [0] * len(comp_dict)
+    for c in competence_str.split(","):
+        c = c.strip().lower()
+        if c in comp_dict:
+            vector[comp_dict[c]] = 1
+    return vector
 
-X = df[["age", "experience", "comp_encoded"]]
-y = df["form_encoded"]
+# Construire les features
+comp_columns = [f"comp_{c}" for c in all_competences]
+comp_vectors = df["competence"].apply(lambda x: encode_competences(x, comp_dict))
+comp_df = pd.DataFrame(comp_vectors.tolist(), columns=comp_columns)
+
+# Features = age + experience + one-hot competences
+X = pd.concat([df[["age", "experience"]], comp_df], axis=1)
+y = df["formation_suggeree"].map(form_dict)
+
+print(f"Features shape: {X.shape}")
+print(f"Feature names: age, experience, {comp_columns}")
 
 # Train/test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -29,11 +53,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # Modèle optimisé pour les probabilités
 model = RandomForestClassifier(
     n_estimators=200,
-    max_depth=10,
+    max_depth=12,
     min_samples_split=5,
     min_samples_leaf=2,
     random_state=42,
-    class_weight='balanced'  # Important pour des probabilités équilibrées
+    class_weight='balanced'
 )
 
 # Entraînement
@@ -42,7 +66,7 @@ model.fit(X_train, y_train)
 # Évaluation
 y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
-print(f"Précision du modèle: {accuracy:.3f}")
+print(f"\nPrécision du modèle: {accuracy:.3f}")
 
 # Validation croisée
 cv_scores = cross_val_score(model, X, y, cv=5)
@@ -53,5 +77,9 @@ joblib.dump(model, "model.pkl")
 joblib.dump(comp_dict, "comp_dict.pkl")
 joblib.dump(form_dict, "form_dict.pkl")
 joblib.dump(inv_form_dict, "inv_form_dict.pkl")
+joblib.dump(all_competences, "all_competences.pkl")
 
-print("Modèle sauvegardé avec support des probabilités!")
+print("\n✅ Modèle multi-compétences sauvegardé!")
+print(f"   Compétences supportées: {len(all_competences)}")
+print(f"   Formations: {len(formations)}")
+print(f"   Features par prédiction: {X.shape[1]}")

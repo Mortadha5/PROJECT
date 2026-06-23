@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from flask_socketio import SocketIO, emit, join_room
+from flask_cors import CORS
 from pymongo import MongoClient
 import joblib
 import numpy as np
@@ -16,61 +17,147 @@ from biometric_auth import BiometricAuth
 
 # Descriptions détaillées des formations
 FORMATION_DETAILS = {
-    "Python": {
-        "description": "Programmation orientée objet, développement web, data science",
-        "duration": "6-8 mois",
-        "difficulty": "Intermédiaire",
-        "salary_range": "45000-75000€",
-        "job_opportunities": "Très élevées",
-        "skills": ["Logique", "Résolution de problèmes", "Analyse"],
-        "industries": ["Tech", "Finance", "Santé", "E-commerce"]
-    },
-    "JavaScript": {
-        "description": "Développement front-end, frameworks modernes, applications web",
-        "duration": "4-6 mois",
-        "difficulty": "Intermédiaire",
-        "salary_range": "40000-70000€",
-        "job_opportunities": "Très élevées",
-        "skills": ["Créativité", "Logique", "Design"],
-        "industries": ["Web", "Mobile", "Gaming", "E-commerce"]
-    },
-    "Data Science": {
-        "description": "Analyse de données, machine learning, visualisation",
+    "Deep Learning & IA Appliquée": {
+        "description": "Réseaux de neurones profonds, NLP, computer vision, IA générative",
         "duration": "8-12 mois",
         "difficulty": "Avancé",
         "salary_range": "55000-95000€",
-        "job_opportunities": "Élevées",
-        "skills": ["Mathématiques", "Statistiques", "Analyse"],
-        "industries": ["Tech", "Finance", "Recherche", "Santé"]
+        "job_opportunities": "Très élevées",
+        "skills": ["Mathématiques", "Python", "Statistiques", "Algèbre linéaire"],
+        "industries": ["Tech", "Finance", "Santé", "Recherche"],
+        "required_competences": ["ia/ml", "python", "data science"],
+        "related_competences": ["cloud", "docker", "kubernetes"]
     },
-    "DevOps": {
-        "description": "Automatisation, conteneurisation, déploiement continu",
+    "Administration Réseaux & Cisco": {
+        "description": "Configuration réseau, routage, switching, sécurité réseau",
         "duration": "6-9 mois",
-        "difficulty": "Avancé",
-        "salary_range": "50000-85000€",
+        "difficulty": "Intermédiaire",
+        "salary_range": "40000-65000€",
         "job_opportunities": "Élevées",
-        "skills": ["Automatisation", "Système", "Réseau"],
-        "industries": ["Tech", "Cloud", "Infrastructure"]
+        "skills": ["Réseaux", "TCP/IP", "Configuration", "Dépannage"],
+        "industries": ["Télécoms", "ESN", "Infrastructure", "Gouvernement"],
+        "required_competences": ["réseaux", "linux"],
+        "related_competences": ["cybersécurité", "cloud computing"]
     },
-    "Cybersécurité": {
-        "description": "Sécurité informatique, tests de pénétration, audit",
+    "Formation Flutter / React Native": {
+        "description": "Développement d'applications mobiles cross-platform modernes",
+        "duration": "4-6 mois",
+        "difficulty": "Intermédiaire",
+        "salary_range": "42000-70000€",
+        "job_opportunities": "Très élevées",
+        "skills": ["Dart/JS", "UI/UX", "API REST", "Mobile"],
+        "industries": ["Mobile", "Startup", "E-commerce", "Médias"],
+        "required_competences": ["développement mobile", "développement web"],
+        "related_competences": ["docker", "cloud"]
+    },
+    "Sécurité Réseaux & Pentesting": {
+        "description": "Tests de pénétration, audit sécurité, ethical hacking, OWASP",
         "duration": "9-12 mois",
         "difficulty": "Avancé",
         "salary_range": "55000-90000€",
         "job_opportunities": "Très élevées",
-        "skills": ["Sécurité", "Analyse", "Investigation"],
-        "industries": ["Sécurité", "Finance", "Gouvernement"]
+        "skills": ["Sécurité", "Réseaux", "Scripts", "Analyse forensique"],
+        "industries": ["Sécurité", "Finance", "Gouvernement", "Défense"],
+        "required_competences": ["cybersécurité", "réseaux", "linux"],
+        "related_competences": ["python", "cloud computing"]
+    },
+    "SQL & NoSQL pour Développeurs": {
+        "description": "Bases de données relationnelles et NoSQL, optimisation requêtes",
+        "duration": "3-5 mois",
+        "difficulty": "Intermédiaire",
+        "salary_range": "40000-65000€",
+        "job_opportunities": "Élevées",
+        "skills": ["SQL", "MongoDB", "Modélisation", "Performance"],
+        "industries": ["Tech", "Finance", "E-commerce", "Data"],
+        "required_competences": ["base de données", "développement web"],
+        "related_competences": ["python", "cloud"]
+    },
+    "Formation Développement Web Frontend": {
+        "description": "React, Vue.js, HTML5/CSS3, responsive design, JAMstack",
+        "duration": "4-6 mois",
+        "difficulty": "Intermédiaire",
+        "salary_range": "38000-65000€",
+        "job_opportunities": "Très élevées",
+        "skills": ["JavaScript", "CSS", "Frameworks", "UX"],
+        "industries": ["Web", "E-commerce", "SaaS", "Médias"],
+        "required_competences": ["développement web"],
+        "related_competences": ["docker", "cloud"]
+    },
+    "CI/CD avec Docker & Jenkins": {
+        "description": "Automatisation DevOps, conteneurisation, pipelines CI/CD",
+        "duration": "6-9 mois",
+        "difficulty": "Avancé",
+        "salary_range": "50000-85000€",
+        "job_opportunities": "Très élevées",
+        "skills": ["Docker", "Jenkins", "Kubernetes", "Automation"],
+        "industries": ["Tech", "Cloud", "Infrastructure", "SaaS"],
+        "required_competences": ["devops", "docker", "kubernetes"],
+        "related_competences": ["linux", "cloud computing", "python"]
+    },
+    "Certification AWS / Azure": {
+        "description": "Architecture cloud, services managés, IaC, certification officielle",
+        "duration": "6-8 mois",
+        "difficulty": "Avancé",
+        "salary_range": "50000-85000€",
+        "job_opportunities": "Très élevées",
+        "skills": ["Cloud", "Architecture", "Sécurité", "Networking"],
+        "industries": ["Cloud", "Tech", "Finance", "Santé"],
+        "required_competences": ["cloud computing", "cloud"],
+        "related_competences": ["devops", "docker", "kubernetes", "linux"]
+    },
+    "Support IT & Gestion Incidents": {
+        "description": "Helpdesk avancé, ITIL, gestion incidents, support niveau 2-3",
+        "duration": "3-4 mois",
+        "difficulty": "Débutant",
+        "salary_range": "30000-45000€",
+        "job_opportunities": "Élevées",
+        "skills": ["Dépannage", "Communication", "ITIL", "Outils ticketing"],
+        "industries": ["ESN", "Support", "Infrastructure", "Télécoms"],
+        "required_competences": ["support technique"],
+        "related_competences": ["réseaux", "linux"]
+    },
+    "Machine Learning avec Python": {
+        "description": "Scikit-learn, feature engineering, modèles supervisés/non-supervisés",
+        "duration": "6-9 mois",
+        "difficulty": "Avancé",
+        "salary_range": "50000-80000€",
+        "job_opportunities": "Très élevées",
+        "skills": ["Python", "Statistiques", "Algorithmes", "Data"],
+        "industries": ["Tech", "Finance", "Santé", "Recherche"],
+        "required_competences": ["python", "data science", "ia/ml"],
+        "related_competences": ["docker", "cloud"]
     }
 }
 
-def analyze_user_profile(age, experience, competence):
+# Mapping compétences → compétences liées pour le skill gap
+COMPETENCE_GRAPH = {
+    "ia/ml": {"related": ["python", "data science", "cloud"], "level": "avancé"},
+    "python": {"related": ["ia/ml", "data science", "devops"], "level": "intermédiaire"},
+    "data science": {"related": ["python", "ia/ml", "base de données"], "level": "avancé"},
+    "développement web": {"related": ["docker", "cloud", "base de données"], "level": "intermédiaire"},
+    "développement mobile": {"related": ["développement web", "cloud", "docker"], "level": "intermédiaire"},
+    "devops": {"related": ["docker", "kubernetes", "linux", "cloud computing"], "level": "avancé"},
+    "docker": {"related": ["devops", "kubernetes", "linux"], "level": "intermédiaire"},
+    "kubernetes": {"related": ["docker", "devops", "cloud computing"], "level": "avancé"},
+    "cybersécurité": {"related": ["réseaux", "linux", "python"], "level": "avancé"},
+    "réseaux": {"related": ["cybersécurité", "linux", "cloud computing"], "level": "intermédiaire"},
+    "cloud computing": {"related": ["cloud", "devops", "docker", "kubernetes"], "level": "avancé"},
+    "cloud": {"related": ["cloud computing", "devops", "docker"], "level": "intermédiaire"},
+    "linux": {"related": ["devops", "réseaux", "docker"], "level": "intermédiaire"},
+    "base de données": {"related": ["python", "développement web", "cloud"], "level": "intermédiaire"},
+    "support technique": {"related": ["réseaux", "linux"], "level": "débutant"},
+}
+
+def analyze_user_profile(age, experience, competences_list):
     """Analyse le profil utilisateur pour des recommandations personnalisées"""
     analysis = {
         "career_stage": "",
         "learning_capacity": "",
         "time_availability": "",
         "risk_tolerance": "",
-        "recommendations": []
+        "recommendations": [],
+        "competence_count": len(competences_list),
+        "profile_strength": ""
     }
     
     # Analyse de la carrière
@@ -95,6 +182,16 @@ def analyze_user_profile(age, experience, competence):
         analysis["time_availability"] = "Très limitée"
         analysis["risk_tolerance"] = "Très faible"
     
+    # Force du profil basée sur le nombre de compétences
+    if len(competences_list) >= 5:
+        analysis["profile_strength"] = "Profil polyvalent très solide"
+    elif len(competences_list) >= 3:
+        analysis["profile_strength"] = "Profil diversifié"
+    elif len(competences_list) >= 2:
+        analysis["profile_strength"] = "Profil en développement"
+    else:
+        analysis["profile_strength"] = "Profil spécialisé"
+    
     # Recommandations personnalisées
     if experience < 2:
         analysis["recommendations"].append("Privilégier les formations avec beaucoup de pratique")
@@ -106,24 +203,75 @@ def analyze_user_profile(age, experience, competence):
         analysis["recommendations"].append("Se concentrer sur le leadership technique")
         analysis["recommendations"].append("Acquérir des compétences de management")
     
+    if len(competences_list) == 1:
+        analysis["recommendations"].append("Diversifier vos compétences pour plus d'opportunités")
+    
     return analysis
 
-def calculate_recommendation_score(formation, age, experience, competence, base_probability):
+def perform_skill_gap_analysis(competences_list, top_formations):
+    """Analyse les compétences acquises, manquantes et recommandées"""
+    acquired = set(competences_list)
+    recommended = set()
+    missing = set()
+    
+    # Pour chaque formation recommandée, identifier les compétences requises
+    for rec in top_formations[:3]:
+        formation = rec["formation"]
+        details = FORMATION_DETAILS.get(formation, {})
+        required = set(details.get("required_competences", []))
+        related = set(details.get("related_competences", []))
+        
+        # Compétences manquantes = requises mais pas acquises
+        missing.update(required - acquired)
+        # Compétences recommandées = liées mais pas acquises
+        recommended.update(related - acquired)
+    
+    # Aussi utiliser le graphe de compétences
+    for comp in competences_list:
+        comp_info = COMPETENCE_GRAPH.get(comp, {})
+        for related in comp_info.get("related", []):
+            if related not in acquired:
+                recommended.add(related)
+    
+    # Retirer les manquantes des recommandées (priorité aux manquantes)
+    recommended -= missing
+    
+    return {
+        "acquired": list(acquired),
+        "missing": list(missing),
+        "recommended": list(recommended - acquired),
+        "coverage_score": round(len(acquired) / max(len(acquired) + len(missing), 1) * 100, 1)
+    }
+
+def calculate_recommendation_score(formation, age, experience, competences_list, base_probability):
     """Calcule un score personnalisé pour chaque recommandation"""
     details = FORMATION_DETAILS.get(formation, {})
     score = base_probability * 100
     
+    # Bonus basé sur la correspondance des compétences requises
+    required_comps = set(details.get("required_competences", []))
+    user_comps = set(competences_list)
+    if required_comps:
+        match_ratio = len(required_comps & user_comps) / len(required_comps)
+        score += match_ratio * 15  # Bonus jusqu'à +15 pour correspondance parfaite
+    
+    # Bonus pour compétences liées
+    related_comps = set(details.get("related_competences", []))
+    if related_comps:
+        related_match = len(related_comps & user_comps) / len(related_comps)
+        score += related_match * 5  # Bonus jusqu'à +5
+    
     # Ajustements basés sur l'âge
     if age < 30:
         if details.get("difficulty") == "Avancé":
-            score += 5  # Bonus pour les jeunes sur formations avancées
+            score += 5
     elif age > 40:
         if details.get("difficulty") == "Intermédiaire":
-            score += 3  # Bonus pour formations moins risquées
+            score += 3
     
     # Ajustements basés sur l'expérience
     if experience < 2:
-        if details.get("difficulty") == "Intermédiaire":
+        if details.get("difficulty") in ["Débutant", "Intermédiaire"]:
             score += 5
     elif experience > 5:
         if details.get("difficulty") == "Avancé":
@@ -152,6 +300,9 @@ def get_confidence_level(score):
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "votre_cle_secrete_plus_complexe_123!")
 
+# CORS pour le frontend React
+CORS(app, supports_credentials=True, origins=["http://localhost:3000", "http://localhost:5173"])
+
 # Initialiser SocketIO
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -177,6 +328,15 @@ comp_dict = joblib.load("comp_dict.pkl")
 form_dict = joblib.load("form_dict.pkl")
 inv_form_dict = {v: k for k, v in form_dict.items()}
 competences = list(comp_dict.keys())
+
+def encode_competences_vector(competences_list):
+    """Encode une liste de compétences en vecteur one-hot"""
+    vector = [0] * len(comp_dict)
+    for c in competences_list:
+        c = c.strip().lower()
+        if c in comp_dict:
+            vector[comp_dict[c]] = 1
+    return vector
 
 # Middleware login_required
 def login_required(f):
@@ -295,18 +455,470 @@ def logout():
     
     return redirect(url_for("login"))
 
-@app.route("/register", methods=["GET", "POST"])
+@app.route("/register")
 def register():
+    """Inscription publique désactivée - redirection vers login"""
+    return redirect(url_for("login"))
+
+# ═══════════════════════════════════════════════════════════════
+# API JSON pour le frontend React
+# ═══════════════════════════════════════════════════════════════
+
+@app.route("/api/auth/login", methods=["POST"])
+def api_auth_login():
+    data = request.get_json()
+    username = data.get("username", "").strip()
+    password = data.get("password", "")
+    
+    users_collection = db["utilisateurs"]
+    user = users_collection.find_one({"username": username})
+    
+    if not user:
+        return jsonify({"success": False, "error": "Utilisateur non trouvé"}), 401
+    
+    if user.get("blocked"):
+        return jsonify({"success": False, "error": "Compte bloqué. Contactez l'administrateur."}), 403
+    
+    from utils import check_password, log_user_action
+    if check_password(password, user["password"]):
+        session["logged_in"] = True
+        session["username"] = username
+        session["role"] = user.get("role", "user")
+        session.permanent = True
+        
+        users_collection.update_one(
+            {"username": username},
+            {"$set": {"last_login": datetime.now()}}
+        )
+        log_user_action(db, username, "login", "Connexion réussie (React)")
+        
+        return jsonify({
+            "success": True,
+            "user": {
+                "username": username,
+                "role": user.get("role", "user"),
+                "email": user.get("email", ""),
+                "avatar": user.get("avatar", "")
+            }
+        })
+    else:
+        log_user_action(db, username, "login_failed", "Mot de passe incorrect")
+        return jsonify({"success": False, "error": "Mot de passe incorrect"}), 401
+
+@app.route("/api/auth/logout", methods=["POST"])
+def api_auth_logout():
+    username = session.get("username")
+    session.clear()
+    if username:
+        from utils import log_user_action
+        log_user_action(db, username, "logout", "Déconnexion (React)")
+    return jsonify({"success": True})
+
+@app.route("/api/auth/session")
+def api_auth_session():
+    if session.get("logged_in"):
+        return jsonify({
+            "logged_in": True,
+            "username": session.get("username"),
+            "role": session.get("role", "user")
+        })
+    return jsonify({"logged_in": False})
+
+@app.route("/api/profile")
+@login_required
+def api_profile():
+    user = db["utilisateurs"].find_one({"username": session["username"]}, {"_id": 0, "password": 0})
+    if user:
+        user["created_at"] = str(user.get("created_at", ""))
+        return jsonify(user)
+    return jsonify({}), 404
+
+@app.route("/api/profile", methods=["PUT"])
+@login_required
+def api_update_profile():
+    data = request.get_json()
+    update_fields = {}
+    if "email" in data:
+        update_fields["email"] = data["email"]
+    if "bio" in data:
+        update_fields["bio"] = data["bio"]
+    if "full_name" in data:
+        update_fields["full_name"] = data["full_name"]
+    
+    if update_fields:
+        db["utilisateurs"].update_one(
+            {"username": session["username"]},
+            {"$set": update_fields}
+        )
+    return jsonify({"success": True})
+
+@app.route("/api/change_password", methods=["POST"])
+@login_required
+def api_change_password():
+    data = request.get_json()
+    current = data.get("current_password", "")
+    new_pwd = data.get("new_password", "")
+    
+    user = db["utilisateurs"].find_one({"username": session["username"]})
+    from utils import check_password, hash_password
+    
+    if not check_password(current, user["password"]):
+        return jsonify({"success": False, "error": "Mot de passe actuel incorrect"}), 400
+    
+    db["utilisateurs"].update_one(
+        {"username": session["username"]},
+        {"$set": {"password": hash_password(new_pwd)}}
+    )
+    return jsonify({"success": True})
+
+@app.route("/api/admin/users")
+@admin_required
+def api_admin_users():
+    users = list(db["utilisateurs"].find({}, {"_id": 0, "password": 0}))
+    for u in users:
+        u["created_at"] = str(u.get("created_at", ""))
+        u["last_login"] = str(u.get("last_login", ""))
+    return jsonify({"users": users})
+
+@app.route("/api/admin/users/create", methods=["POST"])
+@admin_required
+def api_admin_create_user():
+    data = request.get_json()
+    username = data.get("username", "").strip()
+    
+    if db["utilisateurs"].find_one({"username": username}):
+        return jsonify({"success": False, "error": "Nom d'utilisateur déjà pris"}), 400
+    
+    from utils import hash_password
+    db["utilisateurs"].insert_one({
+        "full_name": data.get("full_name", ""),
+        "username": username,
+        "email": data.get("email", ""),
+        "password": hash_password(data.get("password", "")),
+        "role": data.get("role", "user"),
+        "created_at": datetime.now(),
+        "blocked": False
+    })
+    return jsonify({"success": True})
+
+@app.route("/api/admin/users/<username>", methods=["PUT"])
+@admin_required
+def api_admin_edit_user(username):
+    data = request.get_json()
+    update_fields = {}
+    if "role" in data:
+        update_fields["role"] = data["role"]
+    if "email" in data:
+        update_fields["email"] = data["email"]
+    if "full_name" in data:
+        update_fields["full_name"] = data["full_name"]
+    
+    if update_fields:
+        db["utilisateurs"].update_one({"username": username}, {"$set": update_fields})
+    return jsonify({"success": True})
+
+@app.route("/api/admin/users/<username>", methods=["DELETE"])
+@admin_required
+def api_admin_delete_user(username):
+    if username == "admin":
+        return jsonify({"success": False, "error": "Impossible de supprimer l'admin"}), 400
+    db["utilisateurs"].delete_one({"username": username})
+    return jsonify({"success": True})
+
+@app.route("/api/admin/dashboard")
+@admin_required
+def api_admin_dashboard():
+    users_count = db["utilisateurs"].count_documents({})
+    predictions = list(collection.find({}, {"_id": 0}))
+    total_predictions = len(predictions)
+    
+    avg_age = 0
+    avg_exp = 0
+    formation_dist = {}
+    
+    if predictions:
+        ages = [p.get("age", 0) for p in predictions if p.get("age")]
+        exps = [p.get("experience", 0) for p in predictions if p.get("experience")]
+        avg_age = round(sum(ages) / len(ages), 1) if ages else 0
+        avg_exp = round(sum(exps) / len(exps), 1) if exps else 0
+        
+        for p in predictions:
+            f = p.get("formation", p.get("formation_suggeree", "Autre"))
+            formation_dist[f] = formation_dist.get(f, 0) + 1
+    
+    return jsonify({
+        "total_users": users_count,
+        "total_predictions": total_predictions,
+        "avg_age": avg_age,
+        "avg_experience": avg_exp,
+        "formation_distribution": formation_dist
+    })
+
+@app.route("/api/admin/historique")
+@admin_required
+def api_admin_historique():
+    predictions = list(collection.find({}, {"_id": 0}).sort("created_at", -1).limit(200))
+    for p in predictions:
+        p["created_at"] = str(p.get("created_at", ""))
+    return jsonify({"predictions": predictions})
+
+@app.route("/api/admin/security")
+@admin_required
+def api_admin_security():
+    logs = list(db["user_logs"].find({}, {"_id": 0}).sort("timestamp", -1).limit(100))
+    for l in logs:
+        l["timestamp"] = str(l.get("timestamp", ""))
+    
+    failed_logins = db["user_logs"].count_documents({"action": "login_failed"})
+    blocked_users = db["utilisateurs"].count_documents({"blocked": True})
+    
+    suspicious = []
+    pipeline = [
+        {"$match": {"action": "login_failed"}},
+        {"$group": {"_id": "$username", "count": {"$sum": 1}}},
+        {"$match": {"count": {"$gte": 3}}},
+        {"$sort": {"count": -1}}
+    ]
+    for s in db["user_logs"].aggregate(pipeline):
+        user = db["utilisateurs"].find_one({"username": s["_id"]})
+        suspicious.append({
+            "username": s["_id"],
+            "failed_attempts": s["count"],
+            "blocked": user.get("blocked", False) if user else False
+        })
+    
+    return jsonify({
+        "recent_logs": logs,
+        "failed_logins": failed_logins,
+        "blocked_users": blocked_users,
+        "active_sessions": 0,
+        "suspicious_users": suspicious
+    })
+
+@app.route("/api/admin/roadmaps")
+@admin_required
+def api_admin_roadmaps():
+    roadmaps = list(db["roadmaps"].find())
+    for r in roadmaps:
+        r["_id"] = str(r["_id"])
+    total = len(roadmaps)
+    completed = sum(1 for r in roadmaps if r.get("progress", 0) == 100)
+    in_progress = total - completed
+    avg_progress = round(sum(r.get("progress", 0) for r in roadmaps) / total, 1) if total > 0 else 0
+    
+    return jsonify({
+        "total": total,
+        "completed": completed,
+        "in_progress": in_progress,
+        "avg_progress": avg_progress,
+        "roadmaps": roadmaps
+    })
+
+
+@app.route("/api/admin/roadmaps/<roadmap_id>", methods=["DELETE"])
+@admin_required
+def api_delete_roadmap(roadmap_id):
+    """Supprimer une roadmap par ID"""
+    from bson import ObjectId
+    result = db["roadmaps"].delete_one({"_id": ObjectId(roadmap_id)})
+    if result.deleted_count:
+        return jsonify({"success": True})
+    return jsonify({"error": "Roadmap non trouvée"}), 404
+
+
+# ═══════════════════════════════════════════════════════════════
+# API Admin Predictions (review workflow)
+# ═══════════════════════════════════════════════════════════════
+
+@app.route("/api/admin/predictions/pending")
+@admin_required
+def api_admin_predictions_pending():
+    """Liste des prédictions en attente de review"""
+    from bson import ObjectId
+    status_filter = request.args.get("status", "pending")
+    query = {}
+    if status_filter != "all":
+        query["status"] = status_filter
+    
+    predictions = list(db["prediction_requests"].find(query).sort("created_at", -1))
+    for p in predictions:
+        p["_id"] = str(p["_id"])
+        if p.get("created_at"):
+            p["created_at"] = p["created_at"].isoformat()
+        if p.get("reviewed_at"):
+            p["reviewed_at"] = p["reviewed_at"].isoformat()
+        if p.get("sent_at"):
+            p["sent_at"] = p["sent_at"].isoformat()
+    
+    return jsonify({"predictions": predictions})
+
+
+@app.route("/api/admin/predictions/pending_count")
+@admin_required
+def api_admin_predictions_pending_count():
+    """Nombre de prédictions en attente"""
+    count = db["prediction_requests"].count_documents({"status": "pending"})
+    return jsonify({"count": count})
+
+
+@app.route("/api/admin/predictions/<prediction_id>")
+@admin_required
+def api_admin_prediction_detail(prediction_id):
+    """Détail d'une prédiction"""
+    from bson import ObjectId
+    pred = db["prediction_requests"].find_one({"_id": ObjectId(prediction_id)})
+    if not pred:
+        return jsonify({"error": "Prédiction non trouvée"}), 404
+    
+    pred["_id"] = str(pred["_id"])
+    if pred.get("created_at"):
+        pred["created_at"] = pred["created_at"].isoformat()
+    if pred.get("reviewed_at"):
+        pred["reviewed_at"] = pred["reviewed_at"].isoformat()
+    if pred.get("sent_at"):
+        pred["sent_at"] = pred["sent_at"].isoformat()
+    
+    return jsonify({"prediction": pred})
+
+
+@app.route("/api/admin/predictions/<prediction_id>/send", methods=["POST"])
+@admin_required
+def api_admin_prediction_send(prediction_id):
+    """Envoyer le résultat au user"""
+    from bson import ObjectId
+    data = request.get_json() or {}
+    comment = data.get("comment", "")
+    
+    pred = db["prediction_requests"].find_one({"_id": ObjectId(prediction_id)})
+    if not pred:
+        return jsonify({"error": "Prédiction non trouvée"}), 404
+    
+    update_data = {
+        "status": "sent_to_user",
+        "sent_at": datetime.now(),
+    }
+    if comment:
+        update_data["admin_comment"] = comment
+    
+    db["prediction_requests"].update_one(
+        {"_id": ObjectId(prediction_id)},
+        {"$set": update_data}
+    )
+    
+    # Notifier l'utilisateur
+    formation = pred.get("prediction_result", {}).get("formation_suggeree", "")
+    send_notification(
+        pred["username"],
+        "prediction",
+        "Résultat de prédiction disponible",
+        f"L'administrateur a validé votre prédiction. Formation recommandée : {formation}",
+        link="/mes-resultats"
+    )
+    
+    # Notifier l'admin (confirmation d'envoi)
+    send_notification(
+        session["username"],
+        "success",
+        "Résultat envoyé",
+        f"Le résultat de prédiction a été envoyé à {pred['username']}.",
+        link="/admin/predictions"
+    )
+    
+    return jsonify({"success": True, "message": "Résultat envoyé à l'utilisateur"})
+
+
+@app.route("/api/admin/predictions/<prediction_id>/comment", methods=["POST"])
+@admin_required
+def api_admin_prediction_comment(prediction_id):
+    """Ajouter un commentaire admin"""
+    from bson import ObjectId
+    data = request.get_json()
+    comment = data.get("comment", "")
+    
+    result = db["prediction_requests"].update_one(
+        {"_id": ObjectId(prediction_id)},
+        {"$set": {
+            "admin_comment": comment,
+            "status": "reviewed",
+            "reviewed_at": datetime.now()
+        }}
+    )
+    
+    if result.modified_count:
+        return jsonify({"success": True})
+    return jsonify({"error": "Prédiction non trouvée"}), 404
+
+
+@app.route("/api/mes_resultats")
+@login_required
+def api_mes_resultats():
+    """Résultats envoyés à l'utilisateur"""
+    predictions = list(db["prediction_requests"].find({
+        "username": session["username"],
+        "status": "sent_to_user"
+    }).sort("sent_at", -1))
+    
+    for p in predictions:
+        p["_id"] = str(p["_id"])
+        if p.get("created_at"):
+            p["created_at"] = p["created_at"].isoformat()
+        if p.get("reviewed_at"):
+            p["reviewed_at"] = p["reviewed_at"].isoformat()
+        if p.get("sent_at"):
+            p["sent_at"] = p["sent_at"].isoformat()
+    
+    return jsonify({"predictions": predictions})
+
+
+@app.route("/api/mes_demandes")
+@login_required
+def api_mes_demandes():
+    """Toutes les demandes de l'utilisateur (sans résultat si pending)"""
+    predictions = list(db["prediction_requests"].find({
+        "username": session["username"]
+    }).sort("created_at", -1))
+    
+    result = []
+    for p in predictions:
+        item = {
+            "_id": str(p["_id"]),
+            "status": p["status"],
+            "input_data": p.get("input_data", {}),
+            "admin_comment": p.get("admin_comment", ""),
+            "created_at": p["created_at"].isoformat() if p.get("created_at") else None,
+            "sent_at": p["sent_at"].isoformat() if p.get("sent_at") else None,
+        }
+        # Ne montrer le résultat que si envoyé
+        if p["status"] == "sent_to_user":
+            item["prediction_result"] = p.get("prediction_result", {})
+        result.append(item)
+    
+    return jsonify({"predictions": result})
+
+
+# ═══════════════════════════════════════════════════════════════
+# Fin API React
+# ═══════════════════════════════════════════════════════════════
+
+@app.route("/admin/users/create", methods=["GET", "POST"])
+@admin_required
+def admin_create_user():
     error = None
     success = None
     if request.method == "POST":
-        username = request.form["username"].strip()
-        password = request.form["password"]
-        role = request.form["role"]
+        full_name = request.form.get("full_name", "").strip()
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        role = request.form.get("role", "user")
         
         # Validation
-        if len(username) < 3:
+        if not full_name or len(full_name) < 2:
+            error = "Le nom complet doit contenir au moins 2 caractères"
+        elif len(username) < 3:
             error = "Le nom d'utilisateur doit contenir au moins 3 caractères"
+        elif not email or "@" not in email:
+            error = "Veuillez saisir une adresse email valide"
         elif len(password) < 6:
             error = "Le mot de passe doit contenir au moins 6 caractères"
         elif role not in ["user", "admin"]:
@@ -315,23 +927,27 @@ def register():
             users_collection = db["utilisateurs"]
             if users_collection.find_one({"username": username}):
                 error = "Ce nom d'utilisateur existe déjà"
+            elif users_collection.find_one({"email": email}):
+                error = "Cette adresse email est déjà utilisée"
             else:
-                # Hasher le mot de passe
                 from utils import hash_password, log_user_action
                 hashed_password = hash_password(password)
                 
                 users_collection.insert_one({
+                    "full_name": full_name,
                     "username": username,
+                    "email": email,
                     "password": hashed_password,
                     "created_at": datetime.now(),
-                    "role": role
+                    "role": role,
+                    "created_by": session["username"]
                 })
                 
                 role_text = "Administrateur" if role == "admin" else "Utilisateur"
-                log_user_action(db, username, "register", f"Nouveau compte créé - Rôle: {role_text}")
-                success = f"Compte {role_text} créé avec succès ! Vous pouvez maintenant vous connecter."
+                log_user_action(db, session["username"], "user_create", f"Utilisateur {username} créé - Rôle: {role_text}")
+                success = f"Compte {role_text} '{username}' créé avec succès !"
 
-    return render_template("register.html", error=error, success=success)
+    return render_template("admin_create_user.html", error=error, success=success)
 
 @app.route("/", methods=["GET", "POST"])
 @login_required
@@ -460,18 +1076,28 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/api/predict", methods=["POST"])
+@login_required
 def api_predict():
     data = request.get_json()
-    age = data.get("age", 0)
-    experience = data.get("experience", 0)
-    competence = data.get("competence", "").lower()
-
-    comp_encoded = comp_dict.get(competence, 0)
-    features = np.array([[age, experience, comp_encoded]])
+    age = int(data.get("age", 0))
+    experience = int(data.get("experience", 0))
+    competences_input = data.get("competences", [])
+    
+    # Support ancien format (single competence)
+    if not competences_input and data.get("competence"):
+        competences_input = [data.get("competence")]
+    
+    competences_list = [c.strip().lower() for c in competences_input if c.strip().lower() in comp_dict]
+    
+    if not competences_list:
+        return jsonify({"error": "Aucune compétence valide fournie"}), 400
+    
+    comp_vector = encode_competences_vector(competences_list)
+    features = np.array([[age, experience] + comp_vector])
     pred = model.predict(features)[0]
     formation = inv_form_dict[pred]
 
-    return jsonify({"formation_suggeree": formation})
+    return jsonify({"formation_suggeree": formation, "competences_used": competences_list})
 
 @app.route("/api/predict_advanced", methods=["POST"])
 @login_required
@@ -480,15 +1106,21 @@ def predict_advanced():
         data = request.get_json()
         age = int(data.get("age", 0))
         experience = int(data.get("experience", 0))
-        competence = data.get("competence", "").lower().strip()
+        competences_input = data.get("competences", [])
         
-        # Validation
-        if not competence or competence not in comp_dict:
-            return jsonify({"error": "Compétence non reconnue"}), 400
+        # Support ancien format
+        if not competences_input and data.get("competence"):
+            competences_input = [data.get("competence")]
         
-        # Prédiction avec probabilités
-        comp_encoded = comp_dict.get(competence, 0)
-        features = np.array([[age, experience, comp_encoded]])
+        # Validation et nettoyage
+        competences_list = [c.strip().lower() for c in competences_input if c.strip().lower() in comp_dict]
+        
+        if not competences_list:
+            return jsonify({"error": "Veuillez sélectionner au moins une compétence valide"}), 400
+        
+        # Prédiction avec probabilités (multi-compétences one-hot)
+        comp_vector = encode_competences_vector(competences_list)
+        features = np.array([[age, experience] + comp_vector])
         
         # Obtenir les probabilités pour toutes les classes
         probabilities = model.predict_proba(features)[0]
@@ -497,13 +1129,12 @@ def predict_advanced():
         # Créer les recommandations avec scores personnalisés
         recommendations = []
         for i, prob in enumerate(probabilities):
-            if prob > 0.05:  # Seulement les formations avec probabilité > 5%
+            if prob > 0.02:
                 formation_encoded = classes[i]
                 formation = inv_form_dict[formation_encoded]
                 
-                # Calculer le score personnalisé
                 custom_score = calculate_recommendation_score(
-                    formation, age, experience, competence, prob
+                    formation, age, experience, competences_list, prob
                 )
                 
                 confidence = get_confidence_level(custom_score)
@@ -516,60 +1147,120 @@ def predict_advanced():
                     "base_probability": round(prob * 100, 1),
                     "details": details,
                     "reasons": generate_recommendation_reasons(
-                        formation, age, experience, competence, custom_score
+                        formation, age, experience, competences_list, custom_score
                     )
                 })
         
         # Trier par score de confiance
         recommendations.sort(key=lambda x: x["confidence_score"], reverse=True)
         
-        # Limiter aux 5 meilleures recommandations
+        # Top 5 recommandations
         top_recommendations = recommendations[:5]
         
         # Analyse du profil
-        profile_analysis = analyze_user_profile(age, experience, competence)
+        profile_analysis = analyze_user_profile(age, experience, competences_list)
         
-        # Sauvegarder la prédiction avancée
-        prediction_data = {
-            "nom": data.get("nom", ""),
-            "prenom": data.get("prenom", ""),
-            "age": age,
-            "experience": experience,
-            "competence": competence,
-            "formation_suggeree": top_recommendations[0]["formation"] if top_recommendations else "Aucune",
-            "confidence_score": top_recommendations[0]["confidence_score"] if top_recommendations else 0,
-            "all_recommendations": [r["formation"] for r in top_recommendations[:3]],  # Top 3
-            "created_by": session["username"],
+        # Skill Gap Analysis
+        skill_gap = perform_skill_gap_analysis(competences_list, top_recommendations)
+
+        # Si admin: retourner directement le résultat (ancien workflow)
+        if session.get("role") == "admin":
+            prediction_data = {
+                "nom": data.get("nom", ""),
+                "prenom": data.get("prenom", ""),
+                "age": age,
+                "experience": experience,
+                "competences": competences_list,
+                "competences_count": len(competences_list),
+                "formation_suggeree": top_recommendations[0]["formation"] if top_recommendations else "Aucune",
+                "confidence_score": top_recommendations[0]["confidence_score"] if top_recommendations else 0,
+                "all_recommendations": [r["formation"] for r in top_recommendations],
+                "skill_gap": skill_gap,
+                "created_by": session["username"],
+                "created_at": datetime.now(),
+                "prediction_type": "advanced_multi"
+            }
+            collection.insert_one(prediction_data)
+
+            return jsonify({
+                "success": True,
+                "recommendations": top_recommendations,
+                "profile_analysis": profile_analysis,
+                "skill_gap": skill_gap,
+                "total_analyzed": len(recommendations),
+                "competences_used": competences_list
+            })
+
+        # Si user: sauvegarder en pending, ne pas retourner le résultat
+        prediction_request = {
+            "username": session["username"],
+            "input_data": {
+                "nom": data.get("nom", ""),
+                "prenom": data.get("prenom", ""),
+                "age": age,
+                "experience": experience,
+                "competences": competences_list,
+                "competences_count": len(competences_list),
+            },
+            "prediction_result": {
+                "recommendations": top_recommendations,
+                "profile_analysis": profile_analysis,
+                "skill_gap": skill_gap,
+                "total_analyzed": len(recommendations),
+                "competences_used": competences_list,
+                "formation_suggeree": top_recommendations[0]["formation"] if top_recommendations else "Aucune",
+                "confidence_score": top_recommendations[0]["confidence_score"] if top_recommendations else 0,
+            },
+            "status": "pending",
+            "admin_comment": "",
             "created_at": datetime.now(),
-            "prediction_type": "advanced"
+            "reviewed_at": None,
+            "sent_at": None
         }
         
-        collection.insert_one(prediction_data)
+        db["prediction_requests"].insert_one(prediction_request)
         
-        # Envoyer une notification à l'utilisateur
+        # Notifier l'admin
+        send_notification(
+            "admin",
+            "info",
+            "Nouvelle prédiction en attente",
+            f"{session['username']} a soumis une demande de prédiction",
+            link="/admin/predictions"
+        )
+        
+        # Notifier l'utilisateur (confirmation)
         send_notification(
             session["username"],
-            "prediction",
-            "Nouvelle recommandation",
-            f"Formation recommandée : {top_recommendations[0]['formation']} (score: {top_recommendations[0]['confidence_score']}%)",
-            link="/mes_predictions"
+            "info",
+            "Demande de prédiction envoyée",
+            "Votre demande a été soumise. Vous serez notifié dès que l'administrateur aura validé votre résultat.",
+            link="/mes-resultats"
         )
         
         return jsonify({
             "success": True,
-            "recommendations": top_recommendations,
-            "profile_analysis": profile_analysis,
-            "total_analyzed": len(recommendations)
+            "pending": True,
+            "message": "Votre demande a été envoyée à l'administrateur pour validation."
         })
         
     except Exception as e:
         print(f"Erreur prédiction avancée: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": f"Erreur lors de la prédiction: {str(e)}"}), 500
 
-def generate_recommendation_reasons(formation, age, experience, competence, score):
+def generate_recommendation_reasons(formation, age, experience, competences_list, score):
     """Génère les raisons pour une recommandation"""
     reasons = []
     details = FORMATION_DETAILS.get(formation, {})
+    
+    # Correspondance compétences
+    required = set(details.get("required_competences", []))
+    user_comps = set(competences_list)
+    matched = required & user_comps
+    if matched:
+        reasons.append(f"Correspond à vos compétences : {', '.join(matched)}")
     
     if score >= 80:
         reasons.append("Excellente correspondance avec votre profil")
@@ -587,10 +1278,7 @@ def generate_recommendation_reasons(formation, age, experience, competence, scor
     if details.get("job_opportunities") == "Très élevées":
         reasons.append("Secteur en forte demande")
     
-    if details.get("difficulty") == "Intermédiaire" and experience < 3:
-        reasons.append("Niveau de difficulté adapté")
-    
-    return reasons[:3]  # Limiter à 3 raisons principales
+    return reasons[:4]
 
 @app.route("/advanced_prediction")
 @admin_required
@@ -690,7 +1378,7 @@ def debug_session():
     """
 
 @app.route("/mes_predictions")
-@login_required
+@admin_required
 def mes_predictions():
     # Afficher seulement les prédictions de l'utilisateur connecté
     user_predictions = list(collection.find(
@@ -1030,6 +1718,13 @@ def unread_messages():
             "to_user": "admin",
             "read": False
         })
+        # Per-user breakdown
+        pipeline = [
+            {"$match": {"to_user": "admin", "read": False}},
+            {"$group": {"_id": "$from_user", "count": {"$sum": 1}}}
+        ]
+        per_user = {doc["_id"]: doc["count"] for doc in messages_collection.aggregate(pipeline)}
+        return jsonify({"unread_count": unread_count, "per_user": per_user})
     else:
         # Compter les messages non lus pour l'utilisateur
         unread_count = messages_collection.count_documents({
@@ -1057,6 +1752,13 @@ def get_messages():
                 {"from_user": "admin", "to_user": username}
             ]
         }).sort("created_at", 1))
+        
+        # Marquer comme lus les messages reçus par l'admin
+        messages_collection.update_many({
+            "from_user": username,
+            "to_user": "admin",
+            "read": False
+        }, {"$set": {"read": True}})
     else:
         # Pour l'utilisateur, récupérer ses messages avec l'admin
         messages = list(messages_collection.find({
@@ -1766,7 +2468,7 @@ def send_notification(recipient, notif_type, title, message, link=None):
     socketio.emit('new_notification', notification, room=recipient)
 
 @app.route("/notifications")
-@login_required
+@admin_required
 def notifications_page():
     username = session["username"]
     notifications = list(db["notifications"].find(
@@ -1777,7 +2479,7 @@ def notifications_page():
     return render_template("notifications.html", notifications=notifications)
 
 @app.route("/api/notifications")
-@login_required
+@admin_required
 def get_notifications():
     username = session["username"]
     notifications = list(db["notifications"].find(
@@ -1789,14 +2491,14 @@ def get_notifications():
     return jsonify({"notifications": notifications})
 
 @app.route("/api/notifications/unread_count")
-@login_required
+@admin_required
 def unread_count():
     username = session["username"]
     count = db["notifications"].count_documents({"recipient": username, "read": False})
     return jsonify({"count": count})
 
 @app.route("/api/notifications/mark_read", methods=["POST"])
-@login_required
+@admin_required
 def mark_notification_read():
     notif_id = request.json.get("id")
     if notif_id:
@@ -1807,7 +2509,7 @@ def mark_notification_read():
     return jsonify({"success": True})
 
 @app.route("/api/notifications/mark_all_read", methods=["POST"])
-@login_required
+@admin_required
 def mark_all_read():
     username = session["username"]
     db["notifications"].update_many(
@@ -1856,7 +2558,7 @@ def admin_broadcast_notification():
     return jsonify({"success": True, "sent_to": count})
 
 @app.route("/api/notifications/delete", methods=["POST"])
-@login_required
+@admin_required
 def delete_notification():
     notif_id = request.json.get("id")
     if notif_id:
@@ -2144,8 +2846,64 @@ FORMATION_ROADMAPS = {
 def generate_personalized_roadmap(formation, age, experience):
     """Génère une roadmap personnalisée basée sur le profil"""
     roadmap = FORMATION_ROADMAPS.get(formation)
+    
+    # Si pas trouvé exactement, chercher par correspondance partielle
     if not roadmap:
-        return None
+        formation_lower = formation.lower()
+        for key, value in FORMATION_ROADMAPS.items():
+            if key.lower() in formation_lower or formation_lower in key.lower():
+                roadmap = value
+                formation = key
+                break
+    
+    # Si toujours pas trouvé, générer une roadmap générique
+    if not roadmap:
+        roadmap = {
+            "phases": [
+                {
+                    "title": "Fondamentaux",
+                    "duration": "4-6 semaines",
+                    "icon": "fas fa-seedling",
+                    "color": "#28a745",
+                    "skills": [
+                        {"name": f"Introduction à {formation}", "type": "théorie"},
+                        {"name": "Concepts de base et terminologie", "type": "théorie"},
+                        {"name": "Premiers exercices pratiques", "type": "pratique"},
+                        {"name": "Projet : mise en pratique des fondamentaux", "type": "projet"},
+                    ]
+                },
+                {
+                    "title": "Approfondissement",
+                    "duration": "4-8 semaines",
+                    "icon": "fas fa-chart-line",
+                    "color": "#667eea",
+                    "skills": [
+                        {"name": "Concepts intermédiaires", "type": "théorie"},
+                        {"name": "Techniques avancées", "type": "pratique"},
+                        {"name": "Étude de cas réels", "type": "pratique"},
+                        {"name": "Projet : application complète", "type": "projet"},
+                    ]
+                },
+                {
+                    "title": "Maîtrise & Certification",
+                    "duration": "4-6 semaines",
+                    "icon": "fas fa-trophy",
+                    "color": "#fd7e14",
+                    "skills": [
+                        {"name": "Sujets avancés et spécialisation", "type": "théorie"},
+                        {"name": "Projet final professionnel", "type": "projet"},
+                        {"name": "Préparation certification", "type": "pratique"},
+                        {"name": "Portfolio et mise en production", "type": "projet"},
+                    ]
+                }
+            ],
+            "resources": [
+                {"name": f"Documentation officielle {formation}", "type": "documentation"},
+                {"name": "Tutoriels en ligne", "type": "cours"},
+                {"name": "Communauté et forums", "type": "communauté"},
+            ],
+            "certifications": [f"Certification {formation}"]
+        }
 
     # Personnalisation selon le profil
     tips = []
@@ -2225,11 +2983,20 @@ def api_roadmap():
     age = data.get("age", 25)
     experience = data.get("experience", 0)
 
+    if not formation:
+        return jsonify({"error": "Formation requise"}), 400
+
     roadmap = generate_personalized_roadmap(formation, age, experience)
-    if not roadmap:
-        return jsonify({"error": "Formation non trouvée"}), 404
 
     return jsonify({"success": True, "roadmap": roadmap})
+
+
+@app.route("/api/roadmap/formations")
+@login_required
+def api_roadmap_formations():
+    """Retourne la liste des formations disponibles pour les roadmaps"""
+    formations = list(FORMATION_ROADMAPS.keys())
+    return jsonify({"success": True, "formations": formations})
 
 
 @app.route("/api/roadmap/start", methods=["POST"])
@@ -2305,8 +3072,12 @@ def update_roadmap_progress():
         completed.append(step_key)
 
     # Calculer la progression
-    total_steps = sum(len(phase["skills"]) for phase in FORMATION_ROADMAPS[formation]["phases"])
-    progress = round((len(completed) / total_steps) * 100)
+    roadmap_def = FORMATION_ROADMAPS.get(formation)
+    if roadmap_def:
+        total_steps = sum(len(phase.get("skills", phase.get("steps", []))) for phase in roadmap_def["phases"])
+    else:
+        total_steps = max(len(completed), 1)
+    progress = round((len(completed) / total_steps) * 100) if total_steps > 0 else 0
 
     status = "completed" if progress == 100 else "in_progress"
 

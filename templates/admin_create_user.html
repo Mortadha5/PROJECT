@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Utilisateur - Admin</title>
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+
+        .form-header p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group label i {
+            margin-right: 0.4rem;
+            color: #667eea;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .alert {
+            padding: 0.85rem 1.2rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-error {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            border: 1px solid rgba(255, 71, 87, 0.3);
+        }
+
+        .alert-success {
+            background: rgba(56, 217, 169, 0.1);
+            color: #2b8a3e;
+            border: 1px solid rgba(56, 217, 169, 0.3);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #667eea;
+        }
+
+        .password-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-brain"></i> Formation IA
+        </div>
+        <div class="navbar-nav">
+            <div class="navbar-user">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ session.username }}</span>
+                <span class="badge badge-admin">
+                    <i class="fas fa-crown"></i> Admin
+                </span>
+            </div>
+            <a href="{{ url_for('admin_users') }}" class="navbar-link">
+                <i class="fas fa-users"></i> Utilisateurs
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="navbar-link">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="{{ url_for('logout') }}" class="navbar-link">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <a href="{{ url_for('admin_users') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Retour à la liste des utilisateurs
+        </a>
+
+        <div class="form-container animate-fade-in">
+            <div class="form-header">
+                <span style="font-size: 2rem;">👤</span>
+                <h1>Créer un Utilisateur</h1>
+                <p>Remplissez les informations pour créer un nouveau compte</p>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            {% if success %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> {{ success }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('admin_create_user') }}">
+                <div class="form-group">
+                    <label><i class="fas fa-id-card"></i> Nom complet</label>
+                    <input type="text" name="full_name" class="form-input" placeholder="Ex: Mohamed Amini" required minlength="2">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Nom d'utilisateur</label>
+                    <input type="text" name="username" class="form-input" placeholder="Ex: mamini" required minlength="3">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="Ex: utilisateur@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Mot de passe temporaire</label>
+                    <input type="password" name="password" class="form-input" placeholder="Minimum 6 caractères" required minlength="6">
+                    <p class="password-hint">L'utilisateur pourra changer ce mot de passe après sa première connexion.</p>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-user-tag"></i> Rôle</label>
+                    <select name="role" class="form-select" required>
+                        <option value="user">Utilisateur</option>
+                        <option value="admin">Administrateur</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-user-plus"></i> Créer le compte
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+    </button>
+    <script src="/static/js/theme-toggle.js"></script>
+</body>
+</html>

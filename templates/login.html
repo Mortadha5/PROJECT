@@ -15,7 +15,8 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, rgba(102,126,234,0.85) 0%, rgba(118,75,162,0.85) 100%),
+                        url('/static/sopra.png') center center / cover no-repeat fixed;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -224,21 +225,6 @@
         .links a:hover {
             color: white;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-
-        /* Lien vers register */
-        .register-link {
-            background: rgba(255, 255, 255, 0.1) !important;
-            padding: 8px 15px !important;
-            border-radius: 8px !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            display: inline-block !important;
-            margin-top: 10px !important;
-        }
-
-        .register-link:hover {
-            background: rgba(255, 255, 255, 0.2) !important;
-            transform: translateY(-2px) !important;
         }
 
         /* Responsive */
@@ -467,10 +453,6 @@
         <!-- Liens -->
         <div class="links">
             <a href="{{ url_for('forgot_password') }}"><i class="fas fa-key"></i> Mot de passe oublié ?</a>
-            <a href="{{ url_for('register') }}" class="register-link">
-                <i class="fas fa-user-plus"></i> 
-                Pas de compte ? S'inscrire
-            </a>
         </div>
     </div>
 

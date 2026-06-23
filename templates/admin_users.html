@@ -559,6 +559,9 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Rechercher un utilisateur..." autocomplete="off">
             </div>
+            <a href="{{ url_for('admin_create_user') }}" class="action-btn" style="padding: 0.55rem 1rem; background: var(--primary-gradient); color: white; border-radius: 10px; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;">
+                <i class="fas fa-user-plus"></i> Ajouter un utilisateur
+            </a>
             <div class="filter-btns">
                 <button class="filter-btn active" data-filter="all">Tous</button>
                 <button class="filter-btn" data-filter="admin">
