@@ -7,10 +7,10 @@ def test_login_page_loads(client):
     assert response.status_code == 200
 
 
-def test_register_page_loads(client):
-    """La page register doit être accessible"""
-    response = client.get('/register')
-    assert response.status_code == 200
+def test_register_page_redirects(client):
+    """La page register redirige vers login (inscription désactivée)"""
+    response = client.get('/register', follow_redirects=False)
+    assert response.status_code == 302
 
 
 def test_index_requires_login(client):
@@ -38,23 +38,23 @@ def test_dashboard_loads_for_admin(admin_client):
     assert response.status_code == 200
 
 
-def test_notifications_page_loads(auth_client):
-    """La page notifications se charge"""
+def test_notifications_page_requires_admin(auth_client):
+    """La page notifications est réservée aux admins"""
     response = auth_client.get('/notifications')
-    assert response.status_code == 200
+    assert response.status_code == 403
 
 
-def test_notifications_unread_count(auth_client):
+def test_notifications_unread_count(admin_client):
     """L'API unread_count retourne un JSON valide"""
-    response = auth_client.get('/api/notifications/unread_count')
+    response = admin_client.get('/api/notifications/unread_count')
     assert response.status_code == 200
     data = response.get_json()
     assert 'count' in data
 
 
-def test_notifications_api(auth_client):
+def test_notifications_api(admin_client):
     """L'API notifications retourne un JSON valide"""
-    response = auth_client.get('/api/notifications')
+    response = admin_client.get('/api/notifications')
     assert response.status_code == 200
     data = response.get_json()
     assert 'notifications' in data

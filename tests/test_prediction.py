@@ -30,37 +30,38 @@ def test_predict_api_invalid_competence(auth_client):
     assert response.status_code == 400
 
 
-def test_predict_api_success(auth_client):
-    """L'API retourne une prédiction valide"""
+def test_predict_api_success_user_pending(auth_client):
+    """L'API retourne un statut pending pour un user normal"""
     response = auth_client.post('/api/predict_advanced',
                                 data=json.dumps({
                                     "nom": "Test",
                                     "prenom": "User",
                                     "age": 28,
                                     "experience": 3,
-                                    "competence": "ia/ml, kubernetes"
+                                    "competences": ["ia/ml", "kubernetes"]
+                                }),
+                                content_type='application/json')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['success'] is True
+    assert data['pending'] is True
+
+
+def test_predict_api_returns_correct_structure(admin_client):
+    """L'API retourne la structure attendue pour un admin"""
+    response = admin_client.post('/api/predict_advanced',
+                                data=json.dumps({
+                                    "nom": "Marie",
+                                    "prenom": "Dupont",
+                                    "age": 30,
+                                    "experience": 5,
+                                    "competences": ["ia/ml", "kubernetes"]
                                 }),
                                 content_type='application/json')
     assert response.status_code == 200
     data = response.get_json()
     assert data['success'] is True
     assert 'recommendations' in data
-    assert 'profile_analysis' in data
-    assert len(data['recommendations']) > 0
-
-
-def test_predict_api_returns_correct_structure(auth_client):
-    """L'API retourne la structure attendue"""
-    response = auth_client.post('/api/predict_advanced',
-                                data=json.dumps({
-                                    "nom": "Marie",
-                                    "prenom": "Dupont",
-                                    "age": 30,
-                                    "experience": 5,
-                                    "competence": "ia/ml, kubernetes"
-                                }),
-                                content_type='application/json')
-    data = response.get_json()
 
     rec = data['recommendations'][0]
     assert 'formation' in rec
