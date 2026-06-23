@@ -6,7 +6,6 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login/Login';
 import Prediction from './pages/Prediction/Prediction';
 import Profile from './pages/Profile/Profile';
-import Chatbot from './pages/Chatbot/Chatbot';
 import Messages from './pages/Messages/Messages';
 import Roadmap from './pages/Roadmap/Roadmap';
 import Dashboard from './pages/Admin/Dashboard';
@@ -17,6 +16,7 @@ import Security from './pages/Admin/Security';
 import Notifications from './pages/Admin/Notifications';
 import AdminRoadmaps from './pages/Admin/AdminRoadmaps';
 import AdminPredictions from './pages/Admin/AdminPredictions';
+import EditUser from './pages/Admin/EditUser';
 import MesResultats from './pages/Prediction/MesResultats';
 import './App.css';
 
@@ -31,9 +31,6 @@ function AppRoutes() {
       } />
       <Route path="/profile" element={
         <ProtectedRoute><Profile /></ProtectedRoute>
-      } />
-      <Route path="/chatbot" element={
-        <ProtectedRoute><Chatbot /></ProtectedRoute>
       } />
       <Route path="/messages" element={
         <ProtectedRoute><Messages /></ProtectedRoute>
@@ -54,6 +51,9 @@ function AppRoutes() {
       } />
       <Route path="/admin/users/create" element={
         <ProtectedRoute adminOnly><CreateUser /></ProtectedRoute>
+      } />
+      <Route path="/admin/users/edit/:username" element={
+        <ProtectedRoute adminOnly><EditUser /></ProtectedRoute>
       } />
       <Route path="/admin/historique" element={
         <ProtectedRoute adminOnly><Historique /></ProtectedRoute>

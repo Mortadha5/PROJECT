@@ -143,10 +143,6 @@ export default function Navbar() {
                 <FaGraduationCap className="nav-icon" />
                 <span className="nav-label">Mes Résultats</span>
               </Link>
-              <Link to="/chatbot" className={isActive('/chatbot')}>
-                <FaComments className="nav-icon" />
-                <span className="nav-label">Chatbot</span>
-              </Link>
               <Link to="/messages" className={`${isActive('/messages')} nav-badge-link`}>
                 <FaEnvelope className="nav-icon" />
                 <span className="nav-label">Messages</span>
