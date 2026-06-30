@@ -1,0 +1,1219 @@
+================================================================================
+       PROJET PFE - FORMATION IA
+       Plateforme Intelligente de Recommandation de Formations
+       Document de Référence Technique (Version Finale)
+       Date : 23 Juin 2026
+================================================================================
+
+
+================================================================================
+1. PRÉSENTATION GÉNÉRALE
+================================================================================
+
+Nom du projet      : Formation IA — Plateforme Intelligente de Recommandation
+                     de Formations Professionnelles
+Repository         : https://github.com/Mortadha5/PROJECT.git
+Branche principale : main
+
+OBJECTIF PRINCIPAL :
+Fournir un outil intelligent qui recommande automatiquement des formations
+professionnelles adaptées au profil d'un employé (âge, expérience, compétences)
+en utilisant un modèle de Machine Learning (Random Forest).
+
+PROBLÉMATIQUE :
+Comment optimiser le processus de montée en compétences dans une organisation
+en personnalisant les parcours de formation grâce à l'Intelligence Artificielle ?
+
+PUBLIC CIBLE :
+- Entreprises (services RH, managers) souhaitant orienter leurs collaborateurs
+- Employés cherchant des recommandations de formations adaptées à leur profil
+
+CAS D'UTILISATION :
+1. Un employé soumet son profil → reçoit des recommandations validées par admin
+2. Un administrateur gère les utilisateurs, valide les prédictions, monitore la
+   sécurité du système
+3. Suivi de progression via roadmaps personnalisées par formation
+4. Communication interne via messagerie temps réel
+
+
+================================================================================
+2. ARCHITECTURE COMPLÈTE
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│                        NAVIGATEUR                                │
+│   React 19 SPA (Vite 8.0) — Port 3000 (dev) / 80 (prod)       │
+│   Axios (REST) + socket.io-client (WebSocket)                   │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ HTTP REST + WebSocket
+                               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      BACKEND FLASK                                │
+│   Flask 3.0 + Flask-SocketIO 5.3 — Port 5555                   │
+│   Gunicorn 22.0 (production, 3 workers)                         │
+│   Modèle ML en mémoire (joblib.load au démarrage)              │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ PyMongo 4.7
+                               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        MONGODB 7                                 │
+│   Database : formation_db — Port 27017                          │
+│   12 collections                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+
+ARCHITECTURE DE DÉPLOIEMENT (Docker Compose) :
+┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│    frontend      │   │     backend      │   │      mongo       │
+│  nginx:alpine    │──▶│  python:3.11     │──▶│    mongo:7       │
+│  port 80         │   │  Gunicorn:5555   │   │  port 27017      │
+│  React build     │   │  Flask + ML      │   │  volume persistant│
+└──────────────────┘   └──────────────────┘   └──────────────────┘
+
+Communication :
+- Frontend → Backend : Nginx reverse proxy (/api/ → backend:5555)
+- WebSocket : Nginx proxy upgrade (/socket.io/ → backend:5555)
+- Backend → MongoDB : PyMongo connexion directe (mongodb://mongo:27017/)
+- Backend → ML Model : Chargement en mémoire au démarrage (joblib.load)
+
+
+================================================================================
+3. STACK TECHNIQUE COMPLET
+================================================================================
+
+─── FRONTEND ───────────────────────────────────────────────────────────────────
+
+| Technologie        | Version | Rôle                                         |
+|--------------------|---------|----------------------------------------------|
+| React              | 19.2.6  | Bibliothèque UI, composants, hooks           |
+| Vite               | 8.0     | Build tool, HMR, dev server, proxy           |
+| JavaScript (ES2022)| —       | Langage principal                            |
+| JSX                | —       | Syntaxe template React                       |
+| CSS                | Custom  | Styles glassmorphism, animations, responsive |
+| Axios              | 1.17    | Client HTTP pour appels API REST             |
+| React Router DOM   | 7.17    | Routing SPA, navigation protégée             |
+| React Hot Toast    | 2.6     | Notifications toast (succès, erreur)         |
+| socket.io-client   | 4.8     | WebSocket temps réel (notifications)         |
+| React Icons        | 5.6     | Icônes Font Awesome (react-icons/fa)         |
+| ESLint             | 10.3    | Linting, qualité du code                     |
+| @vitejs/plugin-react| 6.0    | Plugin Vite pour React                       |
+
+─── BACKEND ────────────────────────────────────────────────────────────────────
+
+| Technologie        | Version | Rôle                                         |
+|--------------------|---------|----------------------------------------------|
+| Python             | 3.11    | Langage backend                              |
+| Flask              | 3.0     | Framework web, API REST, sessions            |
+| Flask-SocketIO     | 5.3     | WebSocket notifications temps réel           |
+| Flask-CORS         | 4.0     | Cross-Origin Resource Sharing                |
+| python-socketio    | 5.11    | Moteur Socket.IO serveur                     |
+| python-engineio    | 4.9     | Moteur Engine.IO transport                   |
+| Gunicorn           | 22.0    | Serveur WSGI production (3 workers)          |
+| Werkzeug           | 3.0     | Sécurisation uploads, utilitaires HTTP       |
+
+─── BASE DE DONNÉES ────────────────────────────────────────────────────────────
+
+| Technologie        | Version | Rôle                                         |
+|--------------------|---------|----------------------------------------------|
+| MongoDB            | 7       | SGBD NoSQL (documents JSON)                  |
+| PyMongo            | 4.7     | Driver Python natif MongoDB                  |
+
+─── INTELLIGENCE ARTIFICIELLE ──────────────────────────────────────────────────
+
+| Technologie        | Version | Rôle                                         |
+|--------------------|---------|----------------------------------------------|
+| scikit-learn       | 1.4     | RandomForestClassifier, métriques            |
+| Pandas             | 2.2     | Manipulation DataFrame, lecture CSV          |
+| NumPy              | 1.26    | Calcul vectoriel, arrays                     |
+| joblib             | 1.4     | Sérialisation/chargement modèle ML          |
+
+─── CYBERSÉCURITÉ ──────────────────────────────────────────────────────────────
+
+| Technologie        | Version | Rôle                                         |
+|--------------------|---------|----------------------------------------------|
+| bcrypt             | 4.1     | Hachage mots de passe (salt auto)            |
+| webauthn           | 2.1     | Authentification biométrique FIDO2           |
+| Flask Session      | —       | Gestion sessions sécurisées                  |
+| RBAC               | Custom  | Contrôle d'accès par rôles                   |
+
+─── DEVOPS ─────────────────────────────────────────────────────────────────────
+
+| Technologie        | Rôle                                                  |
+|--------------------|-------------------------------------------------------|
+| Docker             | Conteneurisation (2 Dockerfiles)                      |
+| Docker Compose     | Orchestration 3 services + volumes + healthcheck      |
+| Git                | Versioning local                                      |
+| GitHub             | Hébergement code source                               |
+| GitHub Actions     | Pipeline CI/CD automatisé                             |
+| GHCR               | GitHub Container Registry (images Docker)             |
+| pytest             | Framework de tests Python                             |
+| pytest-cov         | Couverture de code                                    |
+| Nginx              | Serveur web frontend + reverse proxy                  |
+
+
+================================================================================
+4. FONCTIONNALITÉS DÉTAILLÉES
+================================================================================
+
+═══════════════════════════════════════════════════════════════════════════════
+4.1 AUTHENTIFICATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Sécuriser l'accès à la plateforme avec connexion par identifiant/mot de passe.
+
+Fonctionnement :
+  1. L'utilisateur entre username + password
+  2. Flask vérifie dans MongoDB (collection utilisateurs)
+  3. bcrypt.checkpw() compare le hash
+  4. Si OK → session Flask créée (cookie HTTPOnly)
+  5. Frontend stocke user dans AuthContext
+
+Technologies : Flask sessions, bcrypt 4.1, Axios (withCredentials: true)
+
+Fichiers concernés :
+  - Backend : app.py (routes /api/auth/*)
+  - Frontend : Login.jsx, AuthContext.jsx, api.js
+
+Routes API :
+  - POST /api/auth/login       → Connexion
+  - POST /api/auth/logout      → Déconnexion
+  - GET  /api/auth/session     → Vérifier session active
+
+Collection MongoDB : utilisateurs
+
+═══════════════════════════════════════════════════════════════════════════════
+4.2 GESTION DES UTILISATEURS (ADMIN)
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Permettre à l'administrateur de gérer tous les comptes (CRUD complet).
+
+Fonctionnement :
+  - Créer un utilisateur (nom, username, email, password, rôle)
+  - Modifier un utilisateur (nom, email, rôle)
+  - Supprimer un utilisateur (sauf admin)
+  - Bloquer/Débloquer un utilisateur
+  - Réinitialiser le mot de passe (génère MDP temporaire)
+
+Technologies : Flask, PyMongo, bcrypt
+
+Fichiers concernés :
+  - Backend : app.py
+  - Frontend : UsersManagement.jsx, CreateUser.jsx, EditUser.jsx
+
+Routes API :
+  - GET    /api/admin/users                    → Liste tous les utilisateurs
+  - POST   /api/admin/users/create             → Créer un utilisateur
+  - PUT    /api/admin/users/<username>         → Modifier un utilisateur
+  - DELETE /api/admin/users/<username>         → Supprimer un utilisateur
+  - POST   /api/admin/users/reset_password/<u> → Réinitialiser MDP
+
+Collection MongoDB : utilisateurs
+
+═══════════════════════════════════════════════════════════════════════════════
+4.3 GESTION DES RÔLES (RBAC)
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Restreindre l'accès aux ressources selon le rôle de l'utilisateur.
+
+Fonctionnement :
+  - 2 rôles : admin et user
+  - Backend : décorateurs @login_required et @admin_required
+  - Frontend : composant <ProtectedRoute adminOnly> vérifie user.role
+
+Technologies : Flask decorators, React Context API
+
+Fichiers concernés :
+  - Backend : app.py (décorateurs login_required, admin_required)
+  - Frontend : ProtectedRoute.jsx, AuthContext.jsx
+
+═══════════════════════════════════════════════════════════════════════════════
+4.4 GESTION DES PROFILS
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Permettre à l'utilisateur de consulter et modifier son profil.
+
+Fonctionnement :
+  - Consultation : nom, email, bio, avatar, statistiques
+  - Modification : email, nom complet, bio
+  - Avatar : upload photo (fichier) ou icône aléatoire
+  - Changement de mot de passe
+
+Technologies : Flask, Werkzeug (secure_filename), PyMongo
+
+Fichiers concernés :
+  - Backend : app.py (routes /api/profile, /api/upload_avatar)
+  - Frontend : Profile.jsx
+
+Routes API :
+  - GET  /api/profile            → Récupérer profil
+  - PUT  /api/profile            → Modifier profil
+  - POST /api/upload_avatar      → Upload avatar
+  - POST /api/change_password    → Changer mot de passe
+
+Collection MongoDB : utilisateurs
+
+═══════════════════════════════════════════════════════════════════════════════
+4.5 AUTHENTIFICATION BIOMÉTRIQUE
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Permettre la connexion par empreinte digitale ou Windows Hello (FIDO2).
+
+Fonctionnement :
+  1. Enregistrement : génère options → navigateur crée credential → stocke
+  2. Login : génère challenge → navigateur signe assertion → vérifie
+
+Technologies : webauthn 2.1, Web Credentials API (navigateur)
+
+Fichiers concernés :
+  - Backend : biometric_auth.py (classe BiometricAuth), app.py
+  - Templates : biometric_setup.html
+
+Routes API :
+  - POST /api/biometric/register/start     → Démarrer enregistrement
+  - POST /api/biometric/register/complete  → Compléter enregistrement
+  - POST /api/biometric/login/start        → Démarrer auth biométrique
+  - POST /api/biometric/login/complete     → Compléter auth biométrique
+  - GET  /api/biometric/status             → Vérifier si configuré
+
+Collections MongoDB : biometric_credentials, temp_challenges
+
+═══════════════════════════════════════════════════════════════════════════════
+4.6 PRÉDICTION DE FORMATIONS (MACHINE LEARNING)
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Recommander les formations les plus adaptées au profil d'un employé.
+
+Fonctionnement :
+  1. L'utilisateur saisit : âge, expérience, compétences (multi-sélection)
+  2. Backend encode les compétences en vecteur one-hot
+  3. RandomForest.predict_proba() calcule les probabilités
+  4. Scoring personnalisé (compétences match + âge + expérience + marché)
+  5. Retourne top 5 formations avec scores, détails, raisons
+
+Technologies : scikit-learn, NumPy, Pandas, joblib
+
+Fichiers concernés :
+  - Backend : app.py (predict_advanced), train_model.py
+  - Frontend : Prediction.jsx
+
+Routes API :
+  - POST /api/predict_advanced  → Prédiction avancée multi-compétences
+  - POST /api/predict           → Prédiction simple
+
+Collections MongoDB : employes (historique admin), prediction_requests (workflow)
+
+═══════════════════════════════════════════════════════════════════════════════
+4.7 WORKFLOW DE VALIDATION DES PRÉDICTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  L'admin review les prédictions avant de les envoyer aux utilisateurs.
+
+Fonctionnement :
+  - User soumet une prédiction → status "pending" dans prediction_requests
+  - Admin voit les prédictions en attente → peut commenter
+  - Admin envoie le résultat → status "sent_to_user"
+  - User reçoit notification + peut consulter ses résultats
+  - Exception : si c'est un admin qui prédit, résultat direct (pas de pending)
+
+Technologies : Flask, PyMongo, Socket.IO
+
+Fichiers concernés :
+  - Backend : app.py
+  - Frontend : AdminPredictions.jsx, MesResultats.jsx
+
+Routes API :
+  - GET  /api/admin/predictions/pending         → Liste en attente
+  - GET  /api/admin/predictions/pending_count   → Compteur badge
+  - GET  /api/admin/predictions/<id>            → Détail
+  - POST /api/admin/predictions/<id>/send       → Envoyer au user
+  - POST /api/admin/predictions/<id>/comment    → Commenter
+  - GET  /api/mes_resultats                     → Résultats reçus (user)
+  - GET  /api/mes_demandes                      → Toutes mes demandes
+
+Collection MongoDB : prediction_requests
+
+═══════════════════════════════════════════════════════════════════════════════
+4.8 ROADMAP PERSONNALISÉE
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Fournir un parcours d'apprentissage structuré en 4 phases par formation.
+
+Fonctionnement :
+  - 10+ formations avec roadmaps détaillées (FORMATION_ROADMAPS)
+  - Chaque roadmap : 4 phases, chaque phase : 4 skills (théorie/pratique/projet)
+  - Personnalisation selon âge + expérience (rythme, conseils)
+  - Suivi progression : checkbox par skill, sauvegarde en base
+
+Technologies : Flask, PyMongo, React
+
+Fichiers concernés :
+  - Backend : app.py (FORMATION_ROADMAPS, generate_personalized_roadmap)
+  - Frontend : Roadmap.jsx
+
+Routes API :
+  - POST /api/roadmap              → Générer roadmap personnalisée
+  - GET  /api/roadmap/formations   → Liste des formations disponibles
+  - POST /api/roadmap/start        → Démarrer une roadmap
+  - POST /api/roadmap/progress     → Mettre à jour progression
+  - GET  /api/roadmap/user_progress → Récupérer progression
+
+Collection MongoDB : roadmaps
+
+═══════════════════════════════════════════════════════════════════════════════
+4.9 NOTIFICATIONS TEMPS RÉEL
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Alerter les utilisateurs en temps réel lors d'événements importants.
+
+Fonctionnement :
+  1. Un événement déclenche send_notification() dans le backend
+  2. La notification est sauvegardée dans MongoDB
+  3. Socket.IO émet vers le room de l'utilisateur destinataire
+  4. Le client reçoit et affiche un badge + met à jour la liste
+  - Types : info, success, prediction, admin_message, broadcast
+
+Technologies : Flask-SocketIO, socket.io-client, PyMongo
+
+Fichiers concernés :
+  - Backend : app.py (send_notification, SocketIO handlers)
+  - Frontend : Notifications.jsx, Navbar.jsx (badges)
+
+Routes API :
+  - GET  /api/notifications              → Liste notifications
+  - GET  /api/notifications/unread_count → Compteur non lues
+  - POST /api/notifications/mark_read    → Marquer lue
+  - POST /api/notifications/mark_all_read → Marquer toutes lues
+  - POST /api/notifications/send         → Envoyer (admin)
+  - POST /api/notifications/broadcast    → Envoyer à tous
+  - POST /api/notifications/delete       → Supprimer
+
+Collection MongoDB : notifications
+
+═══════════════════════════════════════════════════════════════════════════════
+4.10 MESSAGERIE INTERNE
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Communication bidirectionnelle entre admin et utilisateurs.
+
+Fonctionnement :
+  - User envoie un message → destinataire = admin
+  - Admin peut répondre à n'importe quel user
+  - Marquage automatique de lecture
+  - Badge non-lus dans la navbar
+
+Technologies : Flask, PyMongo, Socket.IO
+
+Fichiers concernés :
+  - Backend : app.py (routes send_message, get_messages, unread_messages)
+  - Frontend : Messages.jsx
+
+Routes API :
+  - POST /send_message         → Envoyer message
+  - GET  /api/get_messages     → Récupérer messages (avec ?username= pour admin)
+  - GET  /api/unread_messages  → Compteur non lus
+
+Collection MongoDB : messages
+
+═══════════════════════════════════════════════════════════════════════════════
+4.11 DASHBOARD ADMIN
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Vue globale des statistiques de la plateforme.
+
+Fonctionnement :
+  - Nombre total d'utilisateurs
+  - Nombre total de prédictions
+  - Âge moyen, expérience moyenne
+  - Distribution des formations recommandées
+
+Technologies : Flask, PyMongo (agrégations)
+
+Fichiers concernés :
+  - Backend : app.py (api_admin_dashboard)
+  - Frontend : Dashboard.jsx
+
+Routes API :
+  - GET /api/admin/dashboard → Statistiques globales
+
+Collections : utilisateurs, employes
+
+═══════════════════════════════════════════════════════════════════════════════
+4.12 HISTORIQUE DES PRÉDICTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Consulter l'historique de toutes les prédictions effectuées.
+
+Fonctionnement :
+  - Liste triée par date (plus récentes en premier)
+  - Filtres disponibles (type, utilisateur)
+  - Limité aux 200 dernières
+
+Technologies : Flask, PyMongo
+
+Fichiers concernés :
+  - Backend : app.py (api_admin_historique)
+  - Frontend : Historique.jsx
+
+Routes API :
+  - GET /api/admin/historique → Historique complet
+
+Collection MongoDB : employes
+
+═══════════════════════════════════════════════════════════════════════════════
+4.13 SÉCURITÉ & AUDIT
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Monitorer les activités, détecter les menaces, bloquer les comptes suspects.
+
+Fonctionnement :
+  - Journalisation de toute action (login, failed, blocked, create, delete, etc.)
+  - Détection des activités suspectes (3+ tentatives échouées)
+  - Interface admin : logs récents, utilisateurs suspects, blocage
+  - Nettoyage programmable des anciens logs
+
+Technologies : Flask, PyMongo (aggregation pipeline)
+
+Fichiers concernés :
+  - Backend : app.py (admin_security), utils.py (log_user_action)
+  - Frontend : Security.jsx
+
+Routes API :
+  - GET  /api/admin/security            → Données sécurité
+  - POST /admin/security/block_user     → Bloquer user
+  - POST /admin/security/unblock_user   → Débloquer user
+  - POST /admin/security/clear_logs     → Nettoyer logs
+
+Collection MongoDB : user_logs
+
+═══════════════════════════════════════════════════════════════════════════════
+4.14 CHATBOT IA
+═══════════════════════════════════════════════════════════════════════════════
+
+Objectif :
+  Assistant conversationnel pour informer sur les formations.
+
+Fonctionnement :
+  - Matching de mots-clés dans le message
+  - Réponses contextuelles (formations, salaires, durées, conseils)
+  - Personnalisation avec le nom de l'utilisateur
+  - Feedback (helpful/not_helpful)
+  - Statistiques d'usage
+
+État actuel : Backend actif, RETIRÉ du frontend (liens et route supprimés)
+
+Technologies : Flask, PyMongo
+
+Routes API :
+  - POST /api/chatbot          → Envoyer message au chatbot
+  - POST /api/chatbot_feedback → Feedback sur réponse
+
+Collections : chatbot_conversations, chatbot_feedback, chatbot_stats
+
+
+================================================================================
+5. ARCHITECTURE FRONTEND (REACT)
+================================================================================
+
+ORGANISATION DES DOSSIERS :
+─────────────────────────────────────────────────────────────────────────────
+frontend/src/
+├── main.jsx                    Point d'entrée (ReactDOM.createRoot)
+├── App.jsx                     Layout principal + AppRoutes + AppLayout
+├── App.css                     Styles globaux (navbar, cards, responsive)
+├── context/
+│   └── AuthContext.jsx         État global auth (user, login, logout)
+├── components/
+│   ├── Navbar.jsx              Sidebar collapsible avec glassmorphism
+│   └── ProtectedRoute.jsx      Guard route (auth + adminOnly)
+├── pages/
+│   ├── Login/
+│   │   ├── Login.jsx           Page connexion (split layout)
+│   │   └── Login.css
+│   ├── Prediction/
+│   │   ├── Prediction.jsx      Formulaire prédiction
+│   │   ├── Prediction.css
+│   │   ├── MesResultats.jsx    Résultats reçus (user)
+│   │   └── MesResultats.css
+│   ├── Profile/
+│   │   ├── Profile.jsx         Profil utilisateur
+│   │   └── Profile.css
+│   ├── Messages/
+│   │   ├── Messages.jsx        Messagerie
+│   │   └── Messages.css
+│   ├── Roadmap/
+│   │   ├── Roadmap.jsx         Roadmap personnalisée
+│   │   └── Roadmap.css
+│   └── Admin/
+│       ├── Dashboard.jsx       Statistiques globales
+│       ├── Dashboard.css
+│       ├── UsersManagement.jsx CRUD utilisateurs
+│       ├── UsersManagement.css
+│       ├── CreateUser.jsx      Créer utilisateur
+│       ├── EditUser.jsx        Modifier utilisateur
+│       ├── Historique.jsx      Historique prédictions
+│       ├── Historique.css
+│       ├── Security.jsx        Audit sécurité
+│       ├── Security.css
+│       ├── Notifications.jsx   Notifications admin
+│       ├── Notifications.css
+│       ├── AdminRoadmaps.jsx   Vue admin roadmaps
+│       ├── AdminPredictions.jsx Review prédictions
+│       └── AdminPredictions.css
+└── services/
+    └── api.js                  Couche Axios (toutes les fonctions API)
+
+ROUTING :
+─────────────────────────────────────────────────────────────────────────────
+- / → Prediction (ProtectedRoute)
+- /login → Login
+- /profile → Profile (ProtectedRoute)
+- /messages → Messages (ProtectedRoute)
+- /roadmap → Roadmap (ProtectedRoute)
+- /mes-resultats → MesResultats (ProtectedRoute)
+- /admin/dashboard → Dashboard (ProtectedRoute adminOnly)
+- /admin/users → UsersManagement (ProtectedRoute adminOnly)
+- /admin/users/create → CreateUser (ProtectedRoute adminOnly)
+- /admin/users/edit/:username → EditUser (ProtectedRoute adminOnly)
+- /admin/historique → Historique (ProtectedRoute adminOnly)
+- /admin/security → Security (ProtectedRoute adminOnly)
+- /admin/notifications → Notifications (ProtectedRoute adminOnly)
+- /admin/roadmaps → AdminRoadmaps (ProtectedRoute adminOnly)
+- /admin/predictions → AdminPredictions (ProtectedRoute adminOnly)
+- /advanced-prediction → Prediction (ProtectedRoute adminOnly)
+- * → Redirect vers /
+
+GESTION DES ÉTATS :
+─────────────────────────────────────────────────────────────────────────────
+- État global : Context API (AuthContext : user, loading, login, logout)
+- État local : useState/useEffect dans chaque composant page
+- Pas de Redux/Zustand (simplicité Context suffit)
+
+APPELS API :
+─────────────────────────────────────────────────────────────────────────────
+- Centralisés dans services/api.js
+- Instance Axios avec baseURL et withCredentials: true
+- Fonctions nommées exportées (login, getUsers, predictAdvanced, etc.)
+
+LAYOUT CONDITIONNEL :
+─────────────────────────────────────────────────────────────────────────────
+- AppLayout vérifie user + isAuthPage ['/login', '/register', '/forgot_password']
+- Si user connecté et pas sur page auth → affiche Navbar + main-content (margin-left)
+- Sinon → pas de navbar, pas de margin (login plein écran)
+
+
+================================================================================
+6. ARCHITECTURE BACKEND (FLASK)
+================================================================================
+
+FICHIER PRINCIPAL : app.py (~2968 lignes)
+
+STRUCTURE :
+─────────────────────────────────────────────────────────────────────────────
+1. Imports et configuration
+2. FORMATION_DETAILS (dictionnaire détaillé des 10 formations)
+3. COMPETENCE_GRAPH (graphe de relations entre compétences)
+4. Fonctions utilitaires ML (analyze_user_profile, skill_gap, scoring)
+5. Création app Flask + config (CORS, SocketIO, session, MongoDB)
+6. Chargement modèle ML (joblib.load)
+7. Middlewares (login_required, admin_required)
+8. Error handlers (404, 500)
+9. Routes Auth (login/logout/register)
+10. Routes API Auth (React)
+11. Routes API Profile
+12. Routes API Admin (users, dashboard, historique, security, roadmaps)
+13. Routes API Admin Predictions (workflow)
+14. Routes User (mes_resultats, mes_demandes)
+15. Routes Templates (héritage Flask, encore actives)
+16. Routes Prediction (predict, predict_advanced)
+17. Routes Messages
+18. Routes Chatbot
+19. Routes Notifications + SocketIO handlers
+20. Routes Roadmap + FORMATION_ROADMAPS
+21. Routes Biometric
+22. Lancement (socketio.run)
+
+MODULES AUXILIAIRES :
+─────────────────────────────────────────────────────────────────────────────
+- biometric_auth.py : Classe BiometricAuth (register_start/complete, login_start/complete)
+- utils.py : hash_password, check_password, log_user_action, share_prediction
+- train_model.py : Script d'entraînement du modèle ML
+
+DÉCORATEURS :
+─────────────────────────────────────────────────────────────────────────────
+@login_required :
+  - Vérifie session.get("logged_in")
+  - Si non connecté → redirect vers /login
+
+@admin_required :
+  - Vérifie session.get("logged_in") ET session.get("role") == "admin"
+  - Si non admin → 403 (access_denied.html)
+
+
+================================================================================
+7. COLLECTIONS MONGODB (formation_db)
+================================================================================
+
+─── UTILISATEURS ───────────────────────────────────────────────────────────────
+{
+  username: String (unique),
+  password: Binary (bcrypt hash),
+  role: "admin" | "user",
+  full_name: String,
+  email: String,
+  bio: String,
+  avatar: String (icône FA ou chemin fichier),
+  avatar_type: "icon" | "file",
+  avatar_file: String (nom fichier),
+  blocked: Boolean,
+  blocked_at: DateTime,
+  blocked_by: String,
+  created_at: DateTime,
+  created_by: String,
+  last_login: DateTime,
+  temp_password: Boolean,
+  updated_at: DateTime
+}
+
+─── EMPLOYES (historique prédictions admin) ─────────────────────────────────────
+{
+  nom: String,
+  prenom: String,
+  age: Number,
+  experience: Number,
+  competences: Array,
+  competences_count: Number,
+  formation_suggeree: String,
+  confidence_score: Number,
+  all_recommendations: Array,
+  skill_gap: Object,
+  created_by: String,
+  created_at: DateTime,
+  prediction_type: "advanced_multi"
+}
+
+─── PREDICTION_REQUESTS (workflow validation) ──────────────────────────────────
+{
+  username: String,
+  input_data: { nom, prenom, age, experience, competences, competences_count },
+  prediction_result: { recommendations, profile_analysis, skill_gap, formation_suggeree, confidence_score },
+  status: "pending" | "reviewed" | "sent_to_user",
+  admin_comment: String,
+  created_at: DateTime,
+  reviewed_at: DateTime,
+  sent_at: DateTime
+}
+
+─── NOTIFICATIONS ──────────────────────────────────────────────────────────────
+{
+  recipient: String (username),
+  type: "info" | "success" | "prediction" | "admin_message" | "broadcast",
+  title: String,
+  message: String,
+  link: String (route frontend),
+  read: Boolean,
+  created_at: DateTime
+}
+
+─── MESSAGES ───────────────────────────────────────────────────────────────────
+{
+  from_user: String,
+  to_user: String,
+  message: String,
+  created_at: DateTime,
+  read: Boolean
+}
+
+─── ROADMAPS ───────────────────────────────────────────────────────────────────
+{
+  username: String,
+  formation: String,
+  phase_index: Number,
+  skill_index: Number,
+  completed: Boolean,
+  progress: Number (0-100),
+  updated_at: DateTime
+}
+
+─── USER_LOGS (audit) ──────────────────────────────────────────────────────────
+{
+  username: String,
+  action: String ("login", "login_failed", "login_blocked", "logout",
+                  "user_create", "user_delete", "user_edit", "password_change",
+                  "password_reset", "profile_update", "avatar_upload",
+                  "biometric_setup", "send_message", "user_blocked", etc.),
+  details: String,
+  timestamp: DateTime
+}
+
+─── BIOMETRIC_CREDENTIALS ──────────────────────────────────────────────────────
+{
+  username: String,
+  credential_id: String (base64),
+  public_key: Binary,
+  sign_count: Number,
+  created_at: DateTime
+}
+
+─── TEMP_CHALLENGES ────────────────────────────────────────────────────────────
+{
+  username: String,
+  challenge: String (base64),
+  timestamp: Number (epoch)
+}
+
+─── CHATBOT_CONVERSATIONS ──────────────────────────────────────────────────────
+{
+  user: String,
+  user_message: String,
+  bot_response: String,
+  timestamp: DateTime
+}
+
+─── CHATBOT_FEEDBACK ───────────────────────────────────────────────────────────
+{
+  message_id: String,
+  user: String,
+  feedback: "helpful" | "not_helpful",
+  comment: String,
+  timestamp: DateTime
+}
+
+─── CHATBOT_STATS ──────────────────────────────────────────────────────────────
+{
+  _id: "global_stats",
+  feedback_helpful: Number,
+  feedback_not_helpful: Number,
+  total_feedback: Number
+}
+
+
+================================================================================
+8. MACHINE LEARNING — DÉTAIL COMPLET
+================================================================================
+
+DATASET :
+─────────────────────────────────────────────────────────────────────────────
+Fichier : dataset_employes_formation_complet.csv
+Colonnes : id, nom, prenom, age, experience, competence (multi-valeurs séparées
+           par virgule), formation_suggeree
+Exemple : 1,Dubois,Leila,42,16,"IA/ML, kubernetes",Deep Learning & IA Appliquée
+
+PRÉTRAITEMENT (train_model.py) :
+─────────────────────────────────────────────────────────────────────────────
+1. Extraction de toutes les compétences uniques (split par virgule, lowercase)
+2. Création dictionnaire comp_dict : {compétence: index}
+3. Encodage one-hot : vecteur de N dimensions (N = nb compétences)
+4. Features finales : [age, experience, comp_0, comp_1, ..., comp_N-1]
+5. Label : formation_suggeree encodée via form_dict
+
+ENTRAÎNEMENT :
+─────────────────────────────────────────────────────────────────────────────
+- Train/test split : 80% / 20% (random_state=42)
+- Modèle : RandomForestClassifier(
+    n_estimators=200,
+    max_depth=12,
+    min_samples_split=5,
+    min_samples_leaf=2,
+    class_weight='balanced',
+    random_state=42
+  )
+- Validation croisée : 5-fold (cross_val_score)
+- Métriques : accuracy_score, classification_report
+
+SAUVEGARDE (joblib.dump) :
+─────────────────────────────────────────────────────────────────────────────
+- model.pkl           : Modèle entraîné
+- comp_dict.pkl       : Dictionnaire compétences → index
+- form_dict.pkl       : Dictionnaire formations → encodage numérique
+- inv_form_dict.pkl   : Dictionnaire inverse (index → nom formation)
+- all_competences.pkl : Liste triée de toutes les compétences
+
+INFÉRENCE (app.py) :
+─────────────────────────────────────────────────────────────────────────────
+1. Réception : age, experience, competences (liste)
+2. encode_competences_vector() → vecteur one-hot
+3. features = [[age, experience] + comp_vector]
+4. model.predict_proba(features) → probabilités pour chaque classe
+5. Pour chaque classe avec prob > 2% :
+   - calculate_recommendation_score() → score personnalisé (0-100)
+   - Bonus : compétences match (+15), related (+5), âge, expérience, marché (+10)
+6. Tri par score décroissant → top 5 recommandations
+7. Chaque recommandation inclut : formation, score, confidence_level, details,
+   reasons (texte explicatif)
+
+POST-TRAITEMENT :
+─────────────────────────────────────────────────────────────────────────────
+- analyze_user_profile() : stade carrière, capacité apprentissage, disponibilité
+- perform_skill_gap_analysis() : compétences acquises vs manquantes vs recommandées
+- get_confidence_level() : Très élevée (≥80), Élevée (≥65), Modérée (≥50), Faible (<50)
+- generate_recommendation_reasons() : raisons textuelles personnalisées
+
+
+================================================================================
+9. CYBERSÉCURITÉ — DÉTAIL COMPLET
+================================================================================
+
+BCRYPT :
+─────────────────────────────────────────────────────────────────────────────
+- utils.py : hash_password() → bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+- utils.py : check_password() → bcrypt.checkpw(password.encode(), hashed)
+- Jamais de mot de passe en clair stocké
+- Salt automatique (unique par hash)
+
+WEBAUTHN (FIDO2) :
+─────────────────────────────────────────────────────────────────────────────
+- biometric_auth.py : classe BiometricAuth
+- authenticatorAttachment: "platform" (empreinte digitale, Face ID, Windows Hello)
+- userVerification: "required"
+- Protocole : challenge/response basé sur cryptographie asymétrique
+- Stockage : credential_id + public_key dans MongoDB
+
+SESSIONS FLASK :
+─────────────────────────────────────────────────────────────────────────────
+- SESSION_COOKIE_SECURE = False (True en production HTTPS)
+- SESSION_COOKIE_HTTPONLY = True (pas d'accès JavaScript)
+- SESSION_COOKIE_SAMESITE = 'Lax' (protection CSRF partielle)
+- PERMANENT_SESSION_LIFETIME = 2 heures
+
+RBAC (Role-Based Access Control) :
+─────────────────────────────────────────────────────────────────────────────
+- 2 rôles : admin, user
+- Backend : @admin_required vérifie session['role'] == 'admin'
+- Frontend : <ProtectedRoute adminOnly> vérifie user.role !== 'admin' → redirect
+- Double vérification (backend + frontend)
+
+PROTECTION DES ROUTES :
+─────────────────────────────────────────────────────────────────────────────
+- @login_required : toute route nécessitant authentification
+- @admin_required : routes admin uniquement
+- Error handlers : 403 Forbidden pour accès non autorisé
+
+VALIDATION DES FICHIERS (Upload) :
+─────────────────────────────────────────────────────────────────────────────
+- werkzeug.utils.secure_filename() : nettoie le nom de fichier
+- Whitelist extensions : {'png', 'jpg', 'jpeg', 'gif'}
+- Limite taille : MAX_CONTENT_LENGTH = 16 * 1024 * 1024 (16 MB)
+- Nom unique : username_timestamp.extension
+
+AUDIT :
+─────────────────────────────────────────────────────────────────────────────
+- log_user_action() appelé pour chaque action significative
+- Détection automatique activités suspectes (3+ échecs login)
+- Interface admin de monitoring (Security.jsx)
+- Nettoyage des logs anciens (clear_logs)
+
+
+================================================================================
+10. TEMPS RÉEL — DÉTAIL COMPLET
+================================================================================
+
+CÔTÉ SERVEUR (Flask-SocketIO) :
+─────────────────────────────────────────────────────────────────────────────
+- Initialisation : socketio = SocketIO(app, cors_allowed_origins="*")
+- Connexion : @socketio.on('connect') → join_room(username)
+- Déconnexion : @socketio.on('disconnect')
+- Envoi : socketio.emit('new_notification', data, room=recipient)
+
+FONCTION send_notification() :
+─────────────────────────────────────────────────────────────────────────────
+def send_notification(recipient, notif_type, title, message, link=None):
+    1. Crée le document notification
+    2. Insère dans MongoDB (collection notifications)
+    3. Émet via Socket.IO vers le room du destinataire
+    4. Le client reçoit l'événement en temps réel
+
+CÔTÉ CLIENT (socket.io-client) :
+─────────────────────────────────────────────────────────────────────────────
+- Connexion automatique au backend via WebSocket
+- Écoute événement 'new_notification'
+- Mise à jour des badges dans la Navbar
+
+POLLING COMPLÉMENTAIRE :
+─────────────────────────────────────────────────────────────────────────────
+- Navbar.jsx : useEffect avec setInterval(10000ms)
+- Appels : getUnreadMessages(), getUnreadNotifCount(), getPendingPredictionsCount()
+- Mise à jour des compteurs de badges
+
+
+================================================================================
+11. DOCKER — DÉTAIL COMPLET
+================================================================================
+
+DOCKERFILE BACKEND (./Dockerfile) :
+─────────────────────────────────────────────────────────────────────────────
+FROM python:3.11-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y gcc
+COPY requirements.txt → pip install
+COPY . .
+RUN mkdir -p /app/static/uploads/avatars
+EXPOSE 5555
+CMD ["gunicorn", "--bind", "0.0.0.0:5555", "--workers", "3", "--timeout", "120", "app:app"]
+
+DOCKERFILE FRONTEND (./frontend/Dockerfile) :
+─────────────────────────────────────────────────────────────────────────────
+# Stage 1 : Build
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json → npm ci → COPY . → npm run build
+
+# Stage 2 : Production
+FROM nginx:alpine
+COPY --from=build /app/dist → /usr/share/nginx/html
+COPY nginx.conf → /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+DOCKER COMPOSE (docker-compose.yml) :
+─────────────────────────────────────────────────────────────────────────────
+services:
+  backend:
+    - build: . (Dockerfile racine)
+    - ports: 5555:5555
+    - environment: FLASK_ENV, MONGO_URI, SECRET_KEY
+    - depends_on: mongo (condition: service_healthy)
+    - volumes: uploads:/app/static/uploads/avatars
+    - restart: unless-stopped
+
+  frontend:
+    - build: ./frontend
+    - ports: 3000:80
+    - depends_on: backend
+    - restart: unless-stopped
+
+  mongo:
+    - image: mongo:7
+    - ports: 27017:27017
+    - volumes: mongo_data:/data/db
+    - healthcheck: mongosh ping (10s interval, 5 retries)
+    - restart: unless-stopped
+
+volumes:
+  mongo_data (persistant)
+  uploads (avatars)
+
+NGINX (frontend/nginx.conf) :
+─────────────────────────────────────────────────────────────────────────────
+- location / → try_files (React Router SPA)
+- location /api/ → proxy_pass http://backend:5555
+- location /send_message → proxy_pass http://backend:5555
+- location /socket.io/ → proxy_pass + upgrade WebSocket
+
+COMMUNICATION INTER-CONTENEURS :
+─────────────────────────────────────────────────────────────────────────────
+- Réseau Docker interne (par défaut docker-compose)
+- Frontend accède au backend via nom de service "backend"
+- Backend accède à MongoDB via "mongo" (MONGO_URI=mongodb://mongo:27017/)
+
+
+================================================================================
+12. CI/CD — PIPELINE GITHUB ACTIONS
+================================================================================
+
+FICHIER : .github/workflows/ci-cd.yml
+
+DÉCLENCHEURS :
+─────────────────────────────────────────────────────────────────────────────
+- push sur main
+- pull_request sur main
+
+JOB 1 : TESTS
+─────────────────────────────────────────────────────────────────────────────
+- Runner : ubuntu-latest
+- Service : MongoDB 7 (port 27017, healthcheck)
+- Setup : Python 3.11 (cache pip)
+- Install : pip install requirements.txt + pytest + pytest-cov
+- Exécution : pytest tests/ -v --cov=. --cov-report=term-missing
+- Variables : MONGO_URI=mongodb://localhost:27017/, SECRET_KEY=test-secret-key
+
+JOB 2 : BUILD DOCKER (après test, si push main)
+─────────────────────────────────────────────────────────────────────────────
+- Login : GitHub Container Registry (GHCR)
+  - Registry : ghcr.io
+  - Username : github.actor
+  - Password : secrets.GITHUB_TOKEN
+- Setup Docker Buildx
+- Build + Push :
+  - Tags : ghcr.io/mortadha5/project:latest + :sha
+  - Cache : type=gha (GitHub Actions cache)
+
+JOB 3 : DEPLOY (après build, si push main)
+─────────────────────────────────────────────────────────────────────────────
+- Conditionnel : si DEPLOY_HOST est configuré
+- SSH vers le serveur :
+  - DEPLOY_HOST : IP/hostname du serveur
+  - DEPLOY_USER : username SSH
+  - DEPLOY_SSH_KEY : clé privée SSH
+- Commandes : cd /opt/formation-ia → docker compose pull → docker compose up -d
+- Si secrets non configurés → skip avec message informatif
+
+
+================================================================================
+13. INFORMATIONS POUR DIAGRAMMES
+================================================================================
+
+─── DIAGRAMME DE CAS D'UTILISATION ─────────────────────────────────────────────
+
+Acteurs :
+  - Utilisateur (employé)
+  - Administrateur
+  - Système IA (Machine Learning)
+
+Cas d'utilisation Utilisateur :
+  - Se connecter (+ biométrique)
+  - Soumettre une prédiction
+  - Consulter ses résultats
+  - Suivre une roadmap
+  - Envoyer un message à l'admin
+  - Modifier son profil
+  - Consulter ses notifications
+
+Cas d'utilisation Administrateur :
+  - Gérer les utilisateurs (CRUD)
+  - Valider/envoyer les prédictions
+  - Consulter le dashboard
+  - Consulter l'historique
+  - Monitorer la sécurité
+  - Bloquer/débloquer des comptes
+  - Envoyer des notifications (individuelle + broadcast)
+  - Répondre aux messages
+  - Effectuer des prédictions directes
+
+Cas d'utilisation Système :
+  - Prédire la formation recommandée
+  - Générer une roadmap personnalisée
+  - Analyser le profil (skill gap)
+  - Envoyer des notifications temps réel
+
+─── DIAGRAMME DE CLASSES ───────────────────────────────────────────────────────
+
+User {
+  username: String, password: Binary, role: String,
+  email: String, full_name: String, blocked: Boolean
+  + login(), logout(), updateProfile()
+}
+
+PredictionRequest {
+  username: String, input_data: Object, prediction_result: Object,
+  status: String, admin_comment: String
+  + submit(), review(), sendToUser()
+}
+
+Notification {
+  recipient: String, type: String, title: String,
+  message: String, read: Boolean
+  + send(), markRead(), broadcast()
+}
+
+Message {
+  from_user: String, to_user: String, message: String, read: Boolean
+  + send(), markAsRead()
+}
+
+Roadmap {
+  username: String, formation: String, progress: Number
+  + start(), updateProgress()
+}
+
+MLModel {
+  model: RandomForest, comp_dict: Dict, form_dict: Dict
+  + predict(), predict_proba(), encodeFeatures()
+}
+
+BiometricCredential {
+  username: String, credential_id: String, public_key: Binary
+  + register(), authenticate()
+}
+
+Relations :
+  User 1──* PredictionRequest
+  User 1──* Notification
+  User 1──* Message
+  User 1──* Roadmap
+  User 1──0..1 BiometricCredential
+  Admin 1──* PredictionRequest (review)
+  MLModel 1──* PredictionRequest (inference)
+
+─── DIAGRAMME DE SÉQUENCE (Prédiction User) ────────────────────────────────────
+
+1. User → Frontend : Remplit formulaire (age, experience, compétences)
+2. Frontend → Backend : POST /api/predict_advanced
+3. Backend → ML Model : encode_competences_vector() + predict_proba()
+4. Backend → Backend : calculate_recommendation_score() + analyze_user_profile()
+5. Backend → MongoDB : insert_one(prediction_requests, status="pending")
+6. Backend → Socket.IO : emit('new_notification') → room("admin")
+7. Backend → Frontend : JSON { success: true, pending: true }
+8. Admin → Frontend : Consulte AdminPredictions
+9. Frontend → Backend : GET /api/admin/predictions/pending
+10. Admin → Frontend : Clique "Envoyer"
+11. Frontend → Backend : POST /api/admin/predictions/<id>/send
+12. Backend → MongoDB : update status="sent_to_user"
+13. Backend → Socket.IO : emit('new_notification') → room(user)
+14. User → Frontend : Consulte MesResultats
+15. Frontend → Backend : GET /api/mes_resultats
+16. Backend → Frontend : JSON { predictions: [...] }
+
+─── DIAGRAMME DE DÉPLOIEMENT ───────────────────────────────────────────────────
+
+[GitHub Repository]
+       │ push
+       ▼
+[GitHub Actions]
+  ├── Tests (pytest + MongoDB service)
+  ├── Build Docker → Push GHCR
+  └── Deploy SSH
+       │
+       ▼
+[Serveur Production]
+  ├── Container: frontend (nginx:80)
+  │      └── React build → Reverse proxy
+  ├── Container: backend (python:5555)
+  │      └── Flask + Gunicorn + ML Model
+  └── Container: mongo (mongo:27017)
+         └── Volume persistant (mongo_data)
+
+─── DIAGRAMME D'ARCHITECTURE ───────────────────────────────────────────────────
+
+Client (Navigateur)
+    │
+    │ HTTPS (port 80/443)
+    ▼
+┌─ NGINX (Frontend Container) ──────────────┐
+│  - Sert le build React                     │
+│  - Reverse proxy /api/ → backend:5555     │
+│  - WebSocket upgrade /socket.io/          │
+└────────────────┬──────────────────────────┘
+                 │
+                 ▼
+┌─ FLASK (Backend Container) ───────────────┐
+│  - API REST (JSON)                         │
+│  - WebSocket (Socket.IO)                   │
+│  - ML Model (scikit-learn, en mémoire)    │
+│  - Auth (bcrypt, WebAuthn, sessions)      │
+│  - Gunicorn (3 workers)                    │
+└────────────────┬──────────────────────────┘
+                 │
+                 ▼
+┌─ MONGODB (Database Container) ────────────┐
+│  - Database: formation_db                  │
+│  - 12 collections                          │
+│  - Volume persistant                       │
+└───────────────────────────────────────────┘
+
+
+================================================================================
+FIN DU DOCUMENT DE RÉFÉRENCE
+================================================================================
